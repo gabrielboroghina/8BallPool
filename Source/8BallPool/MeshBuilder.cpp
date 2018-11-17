@@ -40,16 +40,16 @@ Mesh *MeshBuilder::CreateMesh(const char *name, const std::vector<VertexFormat> 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), 0);
 
 	// set vertex normal attribute
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(sizeof(glm::vec3)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(sizeof(glm::vec3)));
 
 	// set texture coordinate attribute
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3)));
 
 	// set vertex color attribute
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat),
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat),
 	                      (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
 	// ========================================================================
 
@@ -69,18 +69,16 @@ Mesh *MeshBuilder::CreateMesh(const char *name, const std::vector<VertexFormat> 
 
 Mesh *MeshBuilder::CreateDisk(float radius, glm::vec3 centerPos)
 {
-	// Create circle
+	glm::vec3 color(0);
 	std::vector<VertexFormat> vertices;
 	std::vector<unsigned short> indices;
 
 	// Insert center
-	vertices.push_back(VertexFormat(centerPos, glm::vec3(1, 1, 1))); // center
-	vertices.push_back(VertexFormat(glm::vec3(radius, centerPos.y, centerPos.z), glm::vec3(1, 1, 1))); // first point
+	vertices.push_back(VertexFormat(centerPos, color - glm::vec3(10, 10, 10))); // center
+	vertices.push_back(VertexFormat(centerPos + glm::vec3(radius, 0, 0), color)); // first point
 
 	for (int u = 1; u <= 360; u++) {
-		vertices.push_back(VertexFormat(
-			glm::vec3(centerPos.x + radius * cos(u), centerPos.y, centerPos.z + radius * sin(u)),
-			glm::vec3(1, 1, 1)));
+		vertices.push_back(VertexFormat(glm::vec3(centerPos + glm::vec3(radius * cos(u), 0, radius * sin(u))), color));
 
 		indices.push_back(0);
 		indices.push_back(u);
@@ -99,10 +97,11 @@ Mesh *MeshBuilder::CreateRoundedTriangle(float begin, float end, float rad, floa
 	int nrSegments = 60;
 	float period = (end - begin) / nrSegments;
 
-	vertices.push_back(VertexFormat(glm::vec3(0, 0, 0)));
+	vertices.push_back(VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, 0)));
 	for (int i = 0; i <= nrSegments; i++) {
 		float z = (i == nrSegments) ? end : begin + i * period;
-		vertices.push_back(VertexFormat(glm::vec3(y0 - sqrt(rad * rad - (z - x0) * (z - x0)), 0, z)));
+		vertices.push_back(VertexFormat(glm::vec3(y0 - sqrt(rad * rad - (z - x0) * (z - x0)), 0, z), glm::vec3(0),
+		                                glm::vec3(0), glm::vec2(z, y0 - sqrt(rad * rad - (z - x0) * (z - x0)))));
 	}
 
 	for (int i = 1; i <= nrSegments; i++) {
@@ -112,4 +111,26 @@ Mesh *MeshBuilder::CreateRoundedTriangle(float begin, float end, float rad, floa
 	}
 
 	return CreateMesh("", vertices, indices);
+}
+
+Mesh *MeshBuilder::CreateRect(glm::vec3 center, float height, float width, glm::vec3 color)
+{
+	height /= 2;
+	width /= 2;
+	std::vector<VertexFormat> vertices = {
+		VertexFormat(center + glm::vec3(-width, 0, -height), color, glm::vec3(0), glm::vec2(0, 0)),
+		VertexFormat(center + glm::vec3(width, 0, -height), color, glm::vec3(0), glm::vec2(4, 0)),
+		VertexFormat(center + glm::vec3(width, 0, height), color, glm::vec3(0), glm::vec2(4, 4)),
+		VertexFormat(center + glm::vec3(-width, 0, height), color, glm::vec3(0), glm::vec2(0, 4))
+	};
+
+	Mesh *rect = new Mesh("rect");
+	std::vector<unsigned short> indices = {0, 1, 2, 3};
+
+	// draw 2 triangles. Add the remaining 2 indices
+	indices.push_back(0);
+	indices.push_back(2);
+
+	rect->InitFromData(vertices, indices);
+	return rect;
 }

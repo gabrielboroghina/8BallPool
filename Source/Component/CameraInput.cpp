@@ -17,7 +17,7 @@ CameraInput::CameraInput(Camera *camera)
 
 void CameraInput::OnInputUpdate(float deltaTime, int mods)
 {
-	if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) return;
+	if (!window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) return;
 
 	if (window->GetSpecialKeyState() & GLFW_MOD_SHIFT)
 	{
@@ -50,7 +50,7 @@ void CameraInput::OnKeyPress(int key, int mods) {
 
 void CameraInput::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY) {
 
-	if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+	if (window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE))
 	{
 		camera->RotateOY(-(float)deltaX);
 		camera->RotateOX(-(float)deltaY);

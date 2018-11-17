@@ -14,64 +14,13 @@ BallPool::~BallPool() {}
 void BallPool::Init()
 {
 	{
-		Mesh *mesh = new Mesh("box");
-		mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "box.obj");
+		Mesh *mesh = new Mesh("ball");
+		mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "sphere.obj");
 		meshes[mesh->GetMeshID()] = mesh;
 	}
 
-	// Create a simple cube
 	{
-		vector<VertexFormat> vertices
-		{
-			VertexFormat(glm::vec3(0, 0, 1), glm::vec3(0, 1, 1), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(1, 0, 1), glm::vec3(0.5f, 1, 1), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(0, 1, 1), glm::vec3(0, 0.6f, 1), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(1, 1, 1), glm::vec3(0.3f, 1, 0.1f), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0, 0.3f, 0.4f), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(1, 0, 0), glm::vec3(0, 1, 1), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(0, 1, 0), glm::vec3(0, 0.7f, 1), glm::vec3(0), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(1, 1, 0), glm::vec3(0.9f, 1, 0.2f), glm::vec3(0), glm::vec2(0, 0)),
-			// TODO: Complete the information for the cube
-		};
-
-		vector<unsigned short> indices =
-		{
-			0, 1, 2, // indices for first triangle
-			1, 3, 2, // indices for second triangle
-			2, 3, 7,
-			2, 7, 6,
-			1, 7, 3,
-			1, 5, 7,
-			6, 7, 4,
-			7, 5, 4,
-			0, 4, 1,
-			1, 4, 5,
-			2, 6, 4,
-			0, 2, 4,
-			0, 2, 4,
-			// TODO: Complete indices data
-		};
-
-		MeshBuilder::CreateMesh("cube", vertices, indices);
-	}
-
-	{
-		vector<VertexFormat> vertices
-		{
-			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0, 1, 1), glm::vec3(0, 1, 1), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(1, 0, 0), glm::vec3(0, 1, 1), glm::vec3(0, 1, 1), glm::vec2(0, 0)),
-			VertexFormat(glm::vec3(0, 1, 0), glm::vec3(0, 1, 1), glm::vec3(0, 1, 1), glm::vec2(0, 2)),
-		};
-
-		vector<unsigned short> indices = {
-			0, 1, 2,
-		};
-
-		MeshBuilder::CreateMesh("rect", vertices, indices);
-	}
-
-	{
-		// floor
+		// build floor
 		using namespace UIConstants;
 		vector<VertexFormat> vertices = {
 			VertexFormat(glm::vec3(-Floor::LEN, 0, -Floor::LEN), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
@@ -86,17 +35,18 @@ void BallPool::Init()
 		};
 
 		floorMesh = MeshBuilder::CreateMesh("floor", vertices, indices);
+
+		floorTexture = new Texture2D();
+		floorTexture->Load2D((RESOURCE_PATH::TEXTURES + "floor.jpg").c_str(), GL_REPEAT);
 	}
 
 	// Load shader for texture by position
 	LoadShader("TextureByPos");
 	LoadShader("Texture");
 
-	floorTexture = new Texture2D();
-	floorTexture->Load2D("Resources/Textures/floor.jpg", GL_REPEAT);
-
 	// initialize objects
 	cue = new Cue();
+	poolTable = new PoolTable();
 }
 
 void BallPool::FrameStart()
@@ -112,21 +62,15 @@ void BallPool::FrameStart()
 
 void BallPool::Update(float deltaTimeSeconds)
 {
-	{
-		glm::mat4 modelMatrix = glm::mat4(1);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 0));
-		modelMatrix = glm::rotate(modelMatrix, RADIANS(45.0f), glm::vec3(0, 1, 0));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-		//RenderSimpleMesh(meshes["cube"], shaders["VertexColor"], modelMatrix);
-	}
+	RenderTexturedMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
-	RenderSimpleMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
+	RenderTexturedMesh(cue->mesh, shaders["Texture"], glm::mat4(1), cue->GetTextures());
 
-	RenderSimpleMesh(cue->mesh, shaders["Texture"], glm::mat4(1), cue->GetTextures());
+	for (auto comp : poolTable->texComps)
+		RenderTexturedMesh(comp.first, shaders["Texture"], comp.second, {poolTable->texture});
 
-	Mesh *rt = MeshBuilder::CreateRoundedTriangle(0, 1, 1, 1, 1);
-	RenderSimpleMesh(rt, shaders["VertexColor"], glm::translate(glm::mat4(1), glm::vec3(0, 3, 0)), {});
-	delete rt;
+	for (auto comp : poolTable->colorComps)
+		RenderColoredMesh(comp.mesh, shaders["Color"], comp.modelMat, comp.color);
 }
 
 void BallPool::FrameEnd()
@@ -134,7 +78,7 @@ void BallPool::FrameEnd()
 	//DrawCoordinatSystem();
 }
 
-void BallPool::RenderSimpleMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
+void BallPool::RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
                                 const vector<Texture2D *> &textures) const
 {
 	if (!mesh || !shader || !shader->GetProgramID())
@@ -164,6 +108,36 @@ void BallPool::RenderSimpleMesh(const Mesh *mesh, const Shader *shader, const gl
 		string textureName = "textureImg" + to_string(i);
 		glUniform1i(glGetUniformLocation(shader->GetProgramID(), textureName.c_str()), i);
 	}
+
+	// Draw the object
+	glBindVertexArray(mesh->GetBuffers()->VAO);
+	glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
+}
+
+void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const
+{
+	if (!mesh || !shader || !shader->GetProgramID())
+		return;
+
+	// render an object using the specified shader and the specified position
+	glUseProgram(shader->program);
+
+	// Bind model matrix
+	GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
+	glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	// Bind view matrix
+	glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+	GLint loc_view_matrix = glGetUniformLocation(shader->program, "View");
+	glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	// Bind projection matrix
+	glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+	GLint loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
+	glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+	// Bind color vector
+	glUniform3fv(glGetUniformLocation(shader->program, "color"), 1, glm::value_ptr(color));
 
 	// Draw the object
 	glBindVertexArray(mesh->GetBuffers()->VAO);

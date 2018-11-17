@@ -16,4 +16,6 @@ public:
 	static Mesh *CreateDisk(float radius, glm::vec3 centerPos);
 
 	static Mesh *CreateRoundedTriangle(float begin, float end, float rad, float x0, float y0);
+
+	static Mesh *CreateRect(glm::vec3 center, float height, float width, glm::vec3 color);
 };

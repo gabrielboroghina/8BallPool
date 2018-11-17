@@ -5,6 +5,7 @@
 #include "UIConstants.h"
 #include "MeshBuilder.h"
 #include "Objects/Cue.h"
+#include "Objects/PoolTable.h"
 
 class BallPool : public SimpleScene
 {
@@ -20,13 +21,16 @@ private:
 
 	// Objects
 	Cue *cue;
+	PoolTable *poolTable;
 
 	void FrameStart() override;
 	void Update(float deltaTimeSeconds) override;
 	void FrameEnd() override;
 
-	void RenderSimpleMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
-	                      const std::vector<Texture2D *> &textures) const;
+	void RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
+	                        const std::vector<Texture2D *> &textures) const;
+
+	void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
 
 	void OnInputUpdate(float deltaTime, int mods) override;
 	void OnKeyPress(int key, int mods) override;

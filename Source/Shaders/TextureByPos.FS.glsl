@@ -1,11 +1,10 @@
 #version 330 core
 
 layout(location = 0) out vec4 out_color;
-  
-in vec2 TexCoord;
+
 in vec3 v_pos_out;
 
-uniform sampler2D textureImg0, textureImg1;
+uniform sampler2D textureImg0;
 
 void main()
 {

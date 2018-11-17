@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/detail/type_vec3.hpp>
 
 namespace UIConstants
 {
@@ -16,7 +17,10 @@ namespace Floor
 
 namespace Table
 {
-	const float LEN = 5;
+	const float LEN = 4.5;
 	const float WIDTH = 2.5;
+	const float HEIGHT = 1;
+	const float CORNER_RAD = 0.1;
+	const glm::vec3 wallColor(0.06f, 0.02f, 0.0f);
 }
 }
