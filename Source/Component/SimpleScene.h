@@ -33,6 +33,7 @@ class SimpleScene : public World
 
 		virtual void RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 &modelMatrix);
 
+		void LoadShader(const char* shaderName);
 		virtual void ReloadShaders() const final;
 		virtual EngineComponents::Camera* GetSceneCamera() const final;
 		virtual InputController* GetCameraInput() const final;

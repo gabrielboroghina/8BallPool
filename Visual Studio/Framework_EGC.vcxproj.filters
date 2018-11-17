@@ -297,10 +297,16 @@
       <Filter>Laboratoare\Laborator9\Shaders</Filter>
     </None>
     <None Include="ClassDiagram.cd" />
-    <None Include="..\Source\Shaders\FragmentShader.glsl">
+    <None Include="..\Source\Shaders\TextureByPos.FS.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\Source\Shaders\VertexShader.glsl">
+    <None Include="..\Source\Shaders\TextureByPos.VS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\Source\Shaders\Texture.VS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\Source\Shaders\Texture.FS.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

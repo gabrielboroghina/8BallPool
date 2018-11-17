@@ -97,8 +97,10 @@
     <None Include="..\Source\Laboratoare\Laborator8\Shaders\VertexShader.glsl" />
     <None Include="..\Source\Laboratoare\Laborator9\Shaders\FragmentShader.glsl" />
     <None Include="..\Source\Laboratoare\Laborator9\Shaders\VertexShader.glsl" />
-    <None Include="..\Source\Shaders\FragmentShader.glsl" />
-    <None Include="..\Source\Shaders\VertexShader.glsl" />
+    <None Include="..\Source\Shaders\Texture.FS.glsl" />
+    <None Include="..\Source\Shaders\Texture.VS.glsl" />
+    <None Include="..\Source\Shaders\TextureByPos.FS.glsl" />
+    <None Include="..\Source\Shaders\TextureByPos.VS.glsl" />
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

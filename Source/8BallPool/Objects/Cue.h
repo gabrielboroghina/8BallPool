@@ -12,6 +12,6 @@ public:
 	std::vector<Texture2D *> GetTextures() const;
 
 //private:
-	Mesh *smallEndMesh, *bigEndMesh;
+	Mesh *mesh;
 	std::vector<Texture2D *> textures;
 };

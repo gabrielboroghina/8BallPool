@@ -90,3 +90,26 @@ Mesh *MeshBuilder::CreateDisk(float radius, glm::vec3 centerPos)
 	// Create a new mesh from the buffer data
 	return CreateMesh("disk", vertices, indices);
 }
+
+Mesh *MeshBuilder::CreateRoundedTriangle(float begin, float end, float rad, float x0, float y0)
+{
+	std::vector<VertexFormat> vertices;
+	std::vector<unsigned short> indices;
+
+	int nrSegments = 60;
+	float period = (end - begin) / nrSegments;
+
+	vertices.push_back(VertexFormat(glm::vec3(0, 0, 0)));
+	for (int i = 0; i <= nrSegments; i++) {
+		float z = (i == nrSegments) ? end : begin + i * period;
+		vertices.push_back(VertexFormat(glm::vec3(y0 - sqrt(rad * rad - (z - x0) * (z - x0)), 0, z)));
+	}
+
+	for (int i = 1; i <= nrSegments; i++) {
+		indices.push_back(0);
+		indices.push_back(i + 1);
+		indices.push_back(i);
+	}
+
+	return CreateMesh("", vertices, indices);
+}

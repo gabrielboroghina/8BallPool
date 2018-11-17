@@ -72,13 +72,12 @@ void BallPool::Init()
 
 	{
 		// floor
-		float floorLen = 10;
-		vector<VertexFormat> vertices
-		{
-			VertexFormat(glm::vec3(-floorLen, 0, -floorLen), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
-			VertexFormat(glm::vec3(-floorLen, 0, floorLen), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
-			VertexFormat(glm::vec3(floorLen, 0, floorLen), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
-			VertexFormat(glm::vec3(floorLen, 0, -floorLen), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
+		using namespace UIConstants;
+		vector<VertexFormat> vertices = {
+			VertexFormat(glm::vec3(-Floor::LEN, 0, -Floor::LEN), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
+			VertexFormat(glm::vec3(-Floor::LEN, 0, Floor::LEN), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
+			VertexFormat(glm::vec3(Floor::LEN, 0, Floor::LEN), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
+			VertexFormat(glm::vec3(Floor::LEN, 0, -Floor::LEN), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
 		};
 
 		vector<unsigned short> indices = {
@@ -90,18 +89,13 @@ void BallPool::Init()
 	}
 
 	// Load shader for texture by position
-	Shader *shader = new Shader("TextureByPosShader");
-	shader->AddShader("Source/Shaders/VertexShader.glsl", GL_VERTEX_SHADER);
-	shader->AddShader("Source/Shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
-	shader->CreateAndLink();
-	shaders[shader->GetName()] = shader;
+	LoadShader("TextureByPos");
+	LoadShader("Texture");
 
 	floorTexture = new Texture2D();
 	floorTexture->Load2D("Resources/Textures/floor.jpg", GL_REPEAT);
 
-	tex = new Texture2D();
-	tex->Load2D("Resources/Textures/dark_wood.jpg", GL_REPEAT);
-
+	// initialize objects
 	cue = new Cue();
 }
 
@@ -126,10 +120,13 @@ void BallPool::Update(float deltaTimeSeconds)
 		//RenderSimpleMesh(meshes["cube"], shaders["VertexColor"], modelMatrix);
 	}
 
-	RenderSimpleMesh(floorMesh, shaders["TextureByPosShader"], glm::mat4(1), {floorTexture, tex});
+	RenderSimpleMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
-	RenderSimpleMesh(cue->smallEndMesh, shaders["VertexColor"], glm::mat4(1), {});
-	RenderSimpleMesh(cue->bigEndMesh, shaders["VertexColor"], glm::mat4(1), {});
+	RenderSimpleMesh(cue->mesh, shaders["Texture"], glm::mat4(1), cue->GetTextures());
+
+	Mesh *rt = MeshBuilder::CreateRoundedTriangle(0, 1, 1, 1, 1);
+	RenderSimpleMesh(rt, shaders["VertexColor"], glm::translate(glm::mat4(1), glm::vec3(0, 3, 0)), {});
+	delete rt;
 }
 
 void BallPool::FrameEnd()

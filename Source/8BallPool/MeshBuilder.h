@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "Core/GPU/Mesh.h"
+#include <functional>
 
 class MeshBuilder
 {
@@ -13,4 +14,6 @@ public:
 	                        const std::vector<unsigned short> &indices);
 
 	static Mesh *CreateDisk(float radius, glm::vec3 centerPos);
+
+	static Mesh *CreateRoundedTriangle(float begin, float end, float rad, float x0, float y0);
 };

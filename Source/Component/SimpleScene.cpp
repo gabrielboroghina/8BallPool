@@ -17,9 +17,7 @@ SimpleScene::SimpleScene()
 	InitResources();
 }
 
-SimpleScene::~SimpleScene()
-{
-}
+SimpleScene::~SimpleScene() {}
 
 void SimpleScene::InitResources()
 {
@@ -51,7 +49,7 @@ void SimpleScene::InitResources()
 			VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)),
 			VertexFormat(glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)),
 		};
-		std::vector<unsigned short> indices = { 0, 1 };
+		std::vector<unsigned short> indices = {0, 1};
 
 		simpleLine = new Mesh("line");
 		simpleLine->InitFromData(vertices, indices);
@@ -99,10 +97,9 @@ void SimpleScene::InitResources()
 	glEnable(GL_DEPTH_TEST);
 }
 
-void SimpleScene::AddMeshToList(Mesh * mesh)
+void SimpleScene::AddMeshToList(Mesh *mesh)
 {
-	if (mesh->GetMeshID())
-	{
+	if (mesh->GetMeshID()) {
 		meshes[mesh->GetMeshID()] = mesh;
 	}
 }
@@ -112,7 +109,7 @@ void SimpleScene::DrawCoordinatSystem()
 	DrawCoordinatSystem(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 }
 
-void SimpleScene::DrawCoordinatSystem(const glm::mat4 & viewMatrix, const glm::mat4 & projectionMaxtix)
+void SimpleScene::DrawCoordinatSystem(const glm::mat4 &viewMatrix, const glm::mat4 &projectionMaxtix)
 {
 	glLineWidth(1);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -124,8 +121,7 @@ void SimpleScene::DrawCoordinatSystem(const glm::mat4 & viewMatrix, const glm::m
 		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMaxtix));
 
-		if (drawGroundPlane)
-		{
+		if (drawGroundPlane) {
 			objectModel->SetScale(glm::vec3(1));
 			objectModel->SetWorldPosition(glm::vec3(0));
 			glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(objectModel->GetModel()));
@@ -158,7 +154,7 @@ void SimpleScene::DrawCoordinatSystem(const glm::mat4 & viewMatrix, const glm::m
 	}
 }
 
-void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, glm::vec3 position, glm::vec3 scale)
+void SimpleScene::RenderMesh(Mesh *mesh, Shader *shader, glm::vec3 position, glm::vec3 scale)
 {
 	if (!mesh || !shader || !shader->program)
 		return;
@@ -175,12 +171,12 @@ void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, glm::vec3 position, g
 	mesh->Render();
 }
 
-void SimpleScene::RenderMesh(Mesh * mesh, glm::vec3 position, glm::vec3 scale)
+void SimpleScene::RenderMesh(Mesh *mesh, glm::vec3 position, glm::vec3 scale)
 {
 	RenderMesh(mesh, shaders["Simple"], position, scale);
 }
 
-void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader, const glm::mat3 &modelMatrix)
+void SimpleScene::RenderMesh2D(Mesh *mesh, Shader *shader, const glm::mat3 &modelMatrix)
 {
 	if (!mesh || !shader || !shader->program)
 		return;
@@ -188,7 +184,7 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader, const glm::mat3 &mo
 	shader->Use();
 	glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
 	glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
-	
+
 	glm::mat3 mm = modelMatrix;
 	glm::mat4 model = glm::mat4(
 		mm[0][0], mm[0][1], mm[0][2], 0.f,
@@ -200,9 +196,9 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader, const glm::mat3 &mo
 	mesh->Render();
 }
 
-void SimpleScene::RenderMesh2D(Mesh * mesh, const glm::mat3 & modelMatrix, const glm::vec3 & color) const
+void SimpleScene::RenderMesh2D(Mesh *mesh, const glm::mat3 &modelMatrix, const glm::vec3 &color) const
 {
-	Shader* shader = shaders.at("Color");
+	Shader *shader = shaders.at("Color");
 
 	if (!mesh || !shader || !shader->program)
 		return;
@@ -224,7 +220,7 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, const glm::mat3 & modelMatrix, const
 	mesh->Render();
 }
 
-void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix)
+void SimpleScene::RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix)
 {
 	if (!mesh || !shader || !shader->program)
 		return;
@@ -238,6 +234,19 @@ void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & mod
 	mesh->Render();
 }
 
+void SimpleScene::LoadShader(const char *shaderName)
+{
+	string shadersPath = "Source/Shaders/";
+	string vertexShaderName = shadersPath + shaderName + ".VS.glsl";
+	string fragmentShaderName = shadersPath + shaderName + ".FS.glsl";
+
+	Shader *shader = new Shader(shaderName);
+	shader->AddShader(vertexShaderName.c_str(), GL_VERTEX_SHADER);
+	shader->AddShader(fragmentShaderName.c_str(), GL_FRAGMENT_SHADER);
+	shader->CreateAndLink();
+	shaders[shader->GetName()] = shader;
+}
+
 void SimpleScene::ReloadShaders() const
 {
 	cout << endl;
@@ -246,19 +255,17 @@ void SimpleScene::ReloadShaders() const
 	cout << "=============================" << endl;
 	cout << endl;
 
-	for (auto &shader : shaders)
-	{
+	for (auto &shader : shaders) {
 		shader.second->Reload();
 	}
 }
 
-Camera * SimpleScene::GetSceneCamera() const
+Camera *SimpleScene::GetSceneCamera() const
 {
 	return camera;
 }
 
-InputController * SimpleScene::GetCameraInput() const
+InputController *SimpleScene::GetCameraInput() const
 {
 	return cameraInput;
 }
-
