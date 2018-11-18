@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\Source\8BallPool\BallPool.cpp" />
     <ClCompile Include="..\Source\8BallPool\MeshBuilder.cpp" />
+    <ClCompile Include="..\Source\8BallPool\Objects\Ball.cpp" />
     <ClCompile Include="..\Source\8BallPool\Objects\Cue.cpp" />
     <ClCompile Include="..\Source\8BallPool\Objects\PoolTable.cpp" />
     <ClCompile Include="..\Source\Component\CameraInput.cpp" />
@@ -52,7 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\8BallPool\BallPool.h" />
+    <ClInclude Include="..\Source\8BallPool\Camera.h" />
     <ClInclude Include="..\Source\8BallPool\MeshBuilder.h" />
+    <ClInclude Include="..\Source\8BallPool\Objects\Ball.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\Cue.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\PoolTable.h" />
     <ClInclude Include="..\Source\8BallPool\UIConstants.h" />

@@ -160,6 +160,9 @@
     <ClCompile Include="..\Source\8BallPool\Objects\PoolTable.cpp">
       <Filter>8BallPool\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\8BallPool\Objects\Ball.cpp">
+      <Filter>8BallPool\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Core\World.h">
@@ -275,6 +278,12 @@
     </ClInclude>
     <ClInclude Include="..\Source\8BallPool\Objects\PoolTable.h">
       <Filter>8BallPool\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\8BallPool\Objects\Ball.h">
+      <Filter>8BallPool\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\8BallPool\Camera.h">
+      <Filter>8BallPool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

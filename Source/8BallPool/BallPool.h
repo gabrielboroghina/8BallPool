@@ -4,8 +4,19 @@
 #include <Core/GPU/Mesh.h>
 #include "UIConstants.h"
 #include "MeshBuilder.h"
+#include "Camera.h"
 #include "Objects/Cue.h"
 #include "Objects/PoolTable.h"
+#include "Objects/Ball.h"
+
+enum GameState
+{
+	BREAK,
+	// at the game start
+	BALL_IN_HAND,
+	// put the cue ball anywhere
+	TURN
+};
 
 class BallPool : public SimpleScene
 {
@@ -16,12 +27,15 @@ public:
 	void Init() override;
 
 private:
+	Camera *camera;
+	GameState state;
 	Mesh *floorMesh;
-	Texture2D *floorTexture, *tex;
+	Texture2D *floorTexture;
 
 	// Objects
 	Cue *cue;
 	PoolTable *poolTable;
+	Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall;
 
 	void FrameStart() override;
 	void Update(float deltaTimeSeconds) override;
@@ -30,7 +44,10 @@ private:
 	void RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
 	                        const std::vector<Texture2D *> &textures) const;
 
-	void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
+	void RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
+
+	void InitBalls();
+	void tryMoveCueBall(const glm::vec2 &move);
 
 	void OnInputUpdate(float deltaTime, int mods) override;
 	void OnKeyPress(int key, int mods) override;

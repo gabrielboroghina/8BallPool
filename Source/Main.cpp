@@ -2,6 +2,8 @@
 
 #include <Core/Engine.h>
 #include "8BallPool/BallPool.h"
+#include "Laboratoare/Laborator5/Laborator5.h"
+#include "Laboratoare/Laborator6/Laborator6.h"
 
 using namespace std;
 

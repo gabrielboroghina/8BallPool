@@ -9,7 +9,6 @@ using namespace UIConstants::Cue;
 
 Cue::Cue()
 {
-	// create mesh
 	std::vector<VertexFormat> vertices;
 	std::vector<unsigned short> indices;
 
@@ -18,8 +17,7 @@ Cue::Cue()
 
 	// Insert center
 	vertices.push_back(VertexFormat(glm::vec3(0, yBottom, 0), glm::vec3(0), glm::vec3(0), glm::vec2(1, 0.5))); // center
-	vertices.push_back(
-		VertexFormat(glm::vec3(SMALL_RADIUS, LENGTH, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy)));
+	vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS, LENGTH, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy)));
 	vertices.push_back(VertexFormat(glm::vec3(BIG_RADIUS, yBottom, 0), glm::vec3(0), glm::vec3(0), glm::vec2(1, 0)));
 
 	int last;
@@ -30,39 +28,39 @@ Cue::Cue()
 		                                glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy + ratio * u)));
 		indices.push_back(0);
 		indices.push_back(last);
-		indices.push_back(vertices.size() - 1);
+		indices.push_back((unsigned short)vertices.size() - 1);
 
 		vertices.push_back(VertexFormat(glm::vec3(BIG_RADIUS * cos(rad), yBottom, BIG_RADIUS * sin(rad)), glm::vec3(0),
 		                                glm::vec3(0), glm::vec2(1, u / 360)));
 		indices.push_back(0);
 		indices.push_back(last + 1);
-		indices.push_back(vertices.size() - 1);
-
+		indices.push_back((unsigned short)vertices.size() - 1);
 
 		// build trapeze
-		vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS * cos(RADIANS(u - 1)), yBottom,
-		                                          SMALL_RADIUS * sin(RADIANS(u - 1))), glm::vec3(0), glm::vec3(0),
-		                                glm::vec2(1, texSy + ratio * (u - 1) / 360)));
+		vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS * cos(RADIANS(u - 1)), yBottom, SMALL_RADIUS * sin(RADIANS(u - 1))),
+		                                glm::vec3(0), glm::vec3(0), glm::vec2(1, texSy + ratio * (u - 1) / 360)));
 		vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS * cos(rad), yBottom, SMALL_RADIUS * sin(rad)),
 		                                glm::vec3(0), glm::vec3(0), glm::vec2(1, texSy + ratio * u)));
+
+		unsigned short nr = (unsigned short)vertices.size();
 		// right triangle
 		indices.push_back(last);
-		indices.push_back(vertices.size() - 2);
+		indices.push_back(nr - 2);
 		indices.push_back(last + 1);
 
 		// left triangle
-		indices.push_back(vertices.size() - 4);
-		indices.push_back(vertices.size() - 3);
-		indices.push_back(vertices.size() - 1);
+		indices.push_back(nr - 4);
+		indices.push_back(nr - 3);
+		indices.push_back(nr - 1);
 
 		// rect
-		indices.push_back(vertices.size() - 2);
+		indices.push_back(nr - 2);
 		indices.push_back(last);
-		indices.push_back(vertices.size() - 4);
+		indices.push_back(nr - 4);
 
-		indices.push_back(vertices.size() - 4);
-		indices.push_back(vertices.size() - 1);
-		indices.push_back(vertices.size() - 2);
+		indices.push_back(nr - 4);
+		indices.push_back(nr - 1);
+		indices.push_back(nr - 2);
 	}
 
 	mesh = MeshBuilder::CreateMesh("cue", vertices, indices);
@@ -77,7 +75,7 @@ Cue::~Cue()
 	delete mesh;
 }
 
-std::vector<Texture2D*> Cue::GetTextures() const
+std::vector<Texture2D *> Cue::GetTextures() const
 {
 	return textures;
 }
