@@ -2,7 +2,6 @@
 #include "Core/Managers/ResourcePath.h"
 #include "8BallPool/UIConstants.h"
 
-
 Ball::Ball(const glm::vec3 &initialPos) : pos(initialPos), velocity(0)
 {
 	mesh = new Mesh("ball");
@@ -20,5 +19,19 @@ glm::vec2 Ball::Get2DPos() const
 glm::mat4 Ball::GetModelMatrix() const
 {
 	using namespace UIConstants::Ball;
-	return scale(translate(glm::mat4(1), pos), glm::vec3(RAD, RAD, RAD));
+	float scaleFactor = 2 * RAD;
+	return scale(translate(glm::mat4(1), pos), glm::vec3(scaleFactor, scaleFactor, scaleFactor));
+}
+
+void Ball::Move(glm::vec3 delta)
+{
+	pos += delta;
+
+	for (auto &observer : observers)
+		observer->Update(delta);
+}
+
+void Ball::AttachObserver(ITargetObserver *observer)
+{
+	observers.push_back(observer);
 }

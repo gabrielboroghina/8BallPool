@@ -285,6 +285,9 @@
     <ClInclude Include="..\Source\8BallPool\Camera.h">
       <Filter>8BallPool</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\8BallPool\ITargetObserver.h">
+      <Filter>8BallPool</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Source\Laboratoare\Laborator6\Shaders\FragmentShader.glsl">

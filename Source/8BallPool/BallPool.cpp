@@ -13,9 +13,6 @@ BallPool::~BallPool() {}
 
 void BallPool::Init()
 {
-	// init camera
-	camera = new Camera(CameraType::FirstPerson, 60, window->props.aspectRatio);
-
 	{
 		// build floor
 		using namespace UIConstants;
@@ -46,6 +43,10 @@ void BallPool::Init()
 	poolTable = new PoolTable();
 	InitBalls();
 
+	// init camera
+	camera = new Camera(CameraType::ThirdPerson, 60, window->props.aspectRatio, cueBall->pos, 1);
+	cueBall->AttachObserver(camera);
+
 	state = BALL_IN_HAND;
 }
 
@@ -64,7 +65,7 @@ void BallPool::tryMoveCueBall(const glm::vec2 &move)
 {
 	// TODO check collisions
 	using namespace UIConstants::Ball;
-	cueBall->pos += glm::vec3(move.x * BALL_IN_HAND_SPEED, 0, move.y * BALL_IN_HAND_SPEED);
+	cueBall->Move(glm::vec3(move.x * BALL_IN_HAND_SPEED, 0, move.y * BALL_IN_HAND_SPEED));
 }
 
 void BallPool::FrameStart()
@@ -159,7 +160,7 @@ void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const g
 void BallPool::OnInputUpdate(float deltaTime, int mods)
 {
 	// Process camera movement
-	if (window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE))
+	if (window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE) && camera->type == FirstPerson)
 		camera->Update(deltaTime, window->KeyHold(GLFW_KEY_W), window->KeyHold(GLFW_KEY_A), window->KeyHold(GLFW_KEY_S),
 		               window->KeyHold(GLFW_KEY_D), window->KeyHold(GLFW_KEY_Q), window->KeyHold(GLFW_KEY_E));
 
@@ -178,7 +179,7 @@ void BallPool::OnInputUpdate(float deltaTime, int mods)
 
 void BallPool::OnKeyPress(int key, int mods)
 {
-	if (key == GLFW_KEY_SPACE)
+	if (key == GLFW_KEY_SPACE) // switch between First person and third person camera modes
 		camera->SwitchMode();
 }
 

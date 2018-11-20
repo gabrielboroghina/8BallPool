@@ -54,6 +54,7 @@
   <ItemGroup>
     <ClInclude Include="..\Source\8BallPool\BallPool.h" />
     <ClInclude Include="..\Source\8BallPool\Camera.h" />
+    <ClInclude Include="..\Source\8BallPool\ITargetObserver.h" />
     <ClInclude Include="..\Source\8BallPool\MeshBuilder.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\Ball.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\Cue.h" />

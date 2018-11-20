@@ -2,6 +2,7 @@
 
 #include <include/glm.h>
 #include "Core/Engine.h"
+#include "ITargetObserver.h"
 
 enum CameraType
 {
@@ -9,7 +10,7 @@ enum CameraType
 	ThirdPerson
 };
 
-class Camera
+class Camera : public ITargetObserver
 {
 	float distanceToTarget;
 	glm::mat4 projectionMatrix;
@@ -22,21 +23,18 @@ class Camera
 public:
 	CameraType type;
 
-	Camera(CameraType type, int fov_deg, float aspectRatio) : type(type), fov_deg(fov_deg)
+	Camera(CameraType type, int fov_deg, float aspectRatio, glm::vec3 targetPos, float distanceToTarget) :
+		type(type),
+		fov_deg(fov_deg),
+		distanceToTarget(distanceToTarget)
 	{
-		position = glm::vec3(0, 2, 5);
-		forward = glm::vec3(0, 0, -1);
+		forward = glm::vec3(0, -1, -1);
 		up = glm::vec3(0, 1, 0);
 		right = glm::vec3(1, 0, 0);
-		distanceToTarget = 1;
+		position = targetPos - forward * distanceToTarget / glm::length(forward);
 
 		// build Projection Matrix
 		projectionMatrix = glm::perspective(RADIANS(fov_deg), aspectRatio, 0.01f, 200.0f);
-	}
-
-	Camera(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
-	{
-		Set(position, center, up);
 	}
 
 	~Camera() { }
@@ -44,8 +42,8 @@ public:
 	void Set(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
 	{
 		this->position = position;
-		forward = glm::normalize(center - position);
-		right = glm::cross(forward, up);
+		this->forward = glm::normalize(center - position);
+		this->right = glm::cross(forward, up);
 		this->up = glm::cross(right, forward);
 	}
 
@@ -85,6 +83,13 @@ public:
 		}
 	}
 
+	/** Track the target in third person mode */
+	void Update(glm::vec3 movement) override
+	{
+		if (type == ThirdPerson)
+			position += movement;
+	}
+
 	/** Switch between First Person and Third Person camera modes */
 	void SwitchMode()
 	{
@@ -94,6 +99,7 @@ public:
 	void MoveForward(float distance)
 	{
 		glm::vec3 dir = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+		position = position + glm::normalize(dir) * distance;
 		// movement will keep the camera at the same height always
 		// Example: If you rotate up/down your head and walk forward you will still keep the same relative distance (height) to the ground!
 		// Translate the camera using the DIR vector computed from forward
@@ -144,8 +150,7 @@ public:
 		// Compute the new "forward" and "up" vectors
 		// Attention! Don't forget to normalize the vectors
 		// Use glm::rotate()
-		glm::vec4 newVectorforw = glm::rotate(glm::mat4(1), angle, right) * glm::vec4(forward, 1);
-		forward = glm::normalize(glm::vec3(newVectorforw));
+		forward = glm::normalize(glm::rotate(glm::mat4(1), angle, right) * glm::vec4(forward, 1));
 		up = glm::normalize(glm::cross(right, forward));
 	}
 
@@ -155,10 +160,8 @@ public:
 		// Compute the new "forward", "up" and "right" vectors
 		// Don't forget to normalize the vectors
 		// Use glm::rotate()
-		glm::vec4 newVectorforw = glm::rotate(glm::mat4(1), angle, glm::vec3(0, 1, 0)) * glm::vec4(forward, 1);
-		forward = glm::normalize(glm::vec3(newVectorforw));
-		glm::vec4 newVectorRi = glm::rotate(glm::mat4(1), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1);
-		right = glm::normalize(glm::vec3(newVectorRi));
+		forward = glm::normalize(glm::rotate(glm::mat4(1), angle, glm::vec3(0, 1, 0)) * glm::vec4(forward, 1));
+		right = glm::normalize(glm::rotate(glm::mat4(1), angle, glm::vec3(0, 1, 0)) * glm::vec4(right, 1));
 		up = glm::normalize(glm::cross(right, forward));
 	}
 
@@ -167,8 +170,7 @@ public:
 		// TODO
 		// Compute the new Right and Up, Forward stays the same
 		// Don't forget to normalize the vectors
-		glm::vec4 newVectorRi = glm::rotate(glm::mat4(1), angle, forward) * glm::vec4(right, 1);
-		right = glm::normalize(glm::vec3(newVectorRi));
+		right = glm::normalize(glm::rotate(glm::mat4(1), angle, forward) * glm::vec4(right, 1));
 		up = glm::normalize(glm::cross(right, forward));
 	}
 
@@ -177,10 +179,9 @@ public:
 		// TODO
 		// Rotate the camera in Third Person mode - OX axis
 		// Use distanceToTarget as translation distance
-
 		TranslateForward(distanceToTarget);
 		RotateFirstPerson_OX(angle);
-		TranslateForward(distanceToTarget);
+		TranslateForward(-distanceToTarget);
 	}
 
 	void RotateThirdPerson_OY(float angle)
@@ -196,15 +197,13 @@ public:
 	{
 		// TODO
 		// Rotate the camera in Third Person mode - OZ axis
-		glm::vec3 positionOld = position;
-		position = position + forward * distanceToTarget;
+		TranslateForward(distanceToTarget);
 		RotateFirstPerson_OZ(angle);
-		position = positionOld;
+		TranslateForward(-distanceToTarget);
 	}
 
 	glm::mat4 GetViewMatrix() const
 	{
-		// Returns the View Matrix
 		return glm::lookAt(position, position + forward, up);
 	}
 
