@@ -69,6 +69,9 @@ Cue::Cue(): translateMatrix(glm::mat4(1)), rotateMatrix(glm::mat4(1))
 	// import textures
 	textures.push_back(new Texture2D());
 	textures.back()->Load2D("Resources/Textures/cue.png", GL_MIRRORED_REPEAT);
+
+	cueDir = initCueDir;
+	pullBackDist = 0;
 }
 
 Cue::~Cue()
@@ -83,7 +86,12 @@ std::vector<Texture2D *> Cue::GetTextures() const
 
 glm::mat4 Cue::GetModelMatrix() const
 {
-	return translateMatrix * rotateMatrix;
+	return glm::translate(translateMatrix, glm::vec3(cueDir * pullBackDist)) * rotateMatrix;
+}
+
+void Cue::PullBack(float dist)
+{
+	pullBackDist += dist;
 }
 
 void Cue::UpdatePos(glm::vec3 movement)
@@ -94,11 +102,10 @@ void Cue::UpdatePos(glm::vec3 movement)
 void Cue::SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget)
 {
 	dir = glm::normalize(dir);
+	cueDir = dir;
 	translateMatrix = glm::translate(glm::mat4(1), glm::vec3(targetPos + dir * distToTarget));
 
-	glm::vec3 initCueDir = glm::vec3(0, -1, 0);
-
 	glm::vec3 N = glm::cross(initCueDir, dir); // compute the normal
-	float angle = acos(glm::dot(initCueDir, dir) / glm::length(initCueDir));
+	float angle = acos(glm::dot(initCueDir, dir)); // compute the rotation angle
 	rotateMatrix = glm::rotate(glm::mat4(1), angle, N);
 }

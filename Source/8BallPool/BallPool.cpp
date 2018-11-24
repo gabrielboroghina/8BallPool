@@ -7,7 +7,7 @@
 
 using namespace std;
 
-BallPool::BallPool() {}
+BallPool::BallPool() : cueShotRunning(false) {}
 
 BallPool::~BallPool() {}
 
@@ -82,10 +82,27 @@ void BallPool::FrameStart()
 	glViewport(0, 0, resolution.x, resolution.y);
 }
 
+void BallPool::UpdateCue(float deltaTime)
+{
+	// run cue pull-back
+	if (cueShotRunning != 0) {
+		// animate cue movement
+		cue->PullBack(deltaTime * cueShotRunning);
+
+		if (cueShotRunning == UIConstants::Cue::RETURN_SPEED_FACTOR && cue->pullBackDist < 0.1f) {
+			// launch cue ball
+			cue->pullBackDist = 0;
+			cueShotRunning = 0;
+			cueBall->ReceiveVelocity(-glm::vec2(cue->cueDir.x, cue->cueDir.z) * (cueShotDist * 2.5f));
+		}
+	}
+}
+
 void BallPool::Update(float deltaTimeSeconds)
 {
 	RenderTexturedMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
+	UpdateCue(deltaTimeSeconds);
 	if (gameState != GameState::IN_MOVE)
 		RenderTexturedMesh(cue->mesh, shaders["Texture"], cue->GetModelMatrix(), cue->GetTextures());
 
@@ -102,6 +119,7 @@ void BallPool::Update(float deltaTimeSeconds)
 		RenderColoredMesh(redBalls[i]->mesh, shaders["Color"], redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
 	RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
 
+	cueBall->Update(deltaTimeSeconds);
 	RenderColoredMesh(cueBall->mesh, shaders["Color"], cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));
 }
 
@@ -207,9 +225,19 @@ void BallPool::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 	}
 }
 
-void BallPool::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods) {}
+void BallPool::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
+{
+	if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_LEFT) && gameState == TURN || gameState == BREAK)
+		cueShotRunning = UIConstants::Cue::PULL_BACK_SPEED_FACTOR;
+}
 
-void BallPool::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) {}
+void BallPool::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
+{
+	if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_LEFT)) {
+		cueShotDist = cue->pullBackDist;
+		cueShotRunning = UIConstants::Cue::RETURN_SPEED_FACTOR;
+	}
+}
 
 void BallPool::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) {}
 

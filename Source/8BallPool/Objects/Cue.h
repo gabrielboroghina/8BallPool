@@ -6,17 +6,21 @@
 
 class Cue : public ITargetObserver
 {
+	const glm::vec3 initCueDir = glm::vec3(0, -1, 0);
+
 public:
 	Mesh *mesh;
 	std::vector<Texture2D *> textures;
 	glm::mat4 translateMatrix, rotateMatrix;
+	float pullBackDist;
+	glm::vec3 cueDir;
 
-public:
 	Cue();
 	~Cue();
 
 	std::vector<Texture2D *> GetTextures() const;
 	glm::mat4 GetModelMatrix() const;
+	void PullBack(float dist);
 
 	void UpdatePos(glm::vec3 movement) override;
 

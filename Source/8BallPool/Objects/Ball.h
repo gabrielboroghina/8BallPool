@@ -5,6 +5,9 @@
 
 class Ball
 {
+	glm::vec2 velocity;
+	std::vector<ITargetObserver *> observers; // observers of the ball movement
+
 public:
 	Ball(const glm::vec3 &initialPos);
 	~Ball();
@@ -13,12 +16,9 @@ public:
 	glm::mat4 GetModelMatrix() const;
 	void Move(glm::vec3 delta);
 	void AttachObserver(ITargetObserver *observer);
+	void ReceiveVelocity(glm::vec2 v);
+	void Update(float deltaTime);
 
 	glm::vec3 pos;
 	Mesh *mesh;
-
-private:
-	float velocity, vx, vy;
-
-	std::vector<ITargetObserver *> observers;// observers of the ball movement
 };

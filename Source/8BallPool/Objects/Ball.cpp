@@ -1,6 +1,8 @@
 #include "Ball.h"
+
 #include "Core/Managers/ResourcePath.h"
 #include "8BallPool/UIConstants.h"
+#include <algorithm>
 
 Ball::Ball(const glm::vec3 &initialPos) : pos(initialPos), velocity(0)
 {
@@ -34,4 +36,20 @@ void Ball::Move(glm::vec3 delta)
 void Ball::AttachObserver(ITargetObserver *observer)
 {
 	observers.push_back(observer);
+}
+
+void Ball::ReceiveVelocity(glm::vec2 v)
+{
+	velocity += v;
+}
+
+void Ball::Update(float deltaTime)
+{
+	pos.x += velocity.x * deltaTime;
+	pos.z += velocity.y * deltaTime;
+
+	// update the effect of friction
+	float v_abs = glm::length(velocity);
+	if (v_abs > 0)
+		velocity = glm::normalize(velocity) * std::max(v_abs + UIConstants::Ball::FRICTION_ACC * deltaTime, 0.0f);
 }

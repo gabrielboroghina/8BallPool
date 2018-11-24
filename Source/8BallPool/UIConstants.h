@@ -22,6 +22,9 @@ namespace Cue
 	const float BIG_RADIUS = 0.025f;
 
 	const glm::vec3 DIR_CAMERA_SPACE(-1, -0.4f, 0.15f);
+
+	const int PULL_BACK_SPEED_FACTOR = 1;
+	const int RETURN_SPEED_FACTOR = -10;
 }
 
 namespace Floor
@@ -71,5 +74,6 @@ namespace Ball
 	const glm::vec3 initCueBallPos = glm::vec3(0, YPOS, -headZ);
 
 	const float BALL_IN_HAND_SPEED = 1.5f;
+	const float FRICTION_ACC = -0.9; // friction coefficient
 }
 }

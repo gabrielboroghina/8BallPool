@@ -37,6 +37,9 @@ private:
 	PoolTable *poolTable;
 	Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall;
 
+	int cueShotRunning;
+	float cueShotDist;
+
 	void FrameStart() override;
 	void Update(float deltaTimeSeconds) override;
 	void FrameEnd() override;
@@ -48,6 +51,7 @@ private:
 
 	void InitBalls();
 	void tryMoveCueBall(const glm::vec2 &move);
+	void UpdateCue(float deltaTime);
 
 	void OnInputUpdate(float deltaTime, int mods) override;
 	void OnKeyPress(int key, int mods) override;
