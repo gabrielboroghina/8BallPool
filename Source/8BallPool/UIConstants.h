@@ -1,7 +1,8 @@
 #pragma once
 
-#include <glm/detail/type_vec3.hpp>
 #include <vector>
+#include <include/glm.h>
+#include "include/math.h"
 
 namespace UIConstants
 {
@@ -9,6 +10,9 @@ namespace Camera
 {
 	const float SENSITIVITY = 0.001f;
 	const float MOVE_SPEED = 5;
+	const float DIST_TO_TARGET = 3;
+	const glm::vec3 LOOKING_DIR_FIRST_PERSON = glm::vec3(0, 1, 0);
+	const glm::vec3 LOOKING_DIR_THIRD_PERSON = glm::vec3(0, 0.5f, 0.45f);
 }
 
 namespace Cue
@@ -16,6 +20,8 @@ namespace Cue
 	const float LENGTH = 1.5f;
 	const float SMALL_RADIUS = 0.006f;
 	const float BIG_RADIUS = 0.025f;
+
+	const glm::vec3 DIR_CAMERA_SPACE(-1, -0.4f, 0.15f);
 }
 
 namespace Floor

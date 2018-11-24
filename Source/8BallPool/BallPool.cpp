@@ -39,15 +39,18 @@ void BallPool::Init()
 	LoadShader("Texture");
 
 	// initialize objects
+	InitBalls();
 	cue = new Cue();
 	poolTable = new PoolTable();
-	InitBalls();
 
 	// init camera
-	camera = new Camera(CameraType::ThirdPerson, 60, window->props.aspectRatio, cueBall->pos, 1);
-	cueBall->AttachObserver(camera);
+	camera = new Camera(60, window->props.aspectRatio);
+	camera->SwitchMode(FirstPerson, CameraLayout::TopDown);
 
-	state = BALL_IN_HAND;
+	cueBall->AttachObserver(camera);
+	cueBall->AttachObserver(cue);
+
+	gameState = IN_MOVE;
 }
 
 void BallPool::InitBalls()
@@ -83,7 +86,8 @@ void BallPool::Update(float deltaTimeSeconds)
 {
 	RenderTexturedMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
-	RenderTexturedMesh(cue->mesh, shaders["Texture"], glm::mat4(1), cue->GetTextures());
+	if (gameState != GameState::IN_MOVE)
+		RenderTexturedMesh(cue->mesh, shaders["Texture"], cue->GetModelMatrix(), cue->GetTextures());
 
 	for (auto comp : poolTable->texComps)
 		RenderTexturedMesh(comp.first, shaders["Texture"], comp.second, {poolTable->texture});
@@ -98,14 +102,12 @@ void BallPool::Update(float deltaTimeSeconds)
 		RenderColoredMesh(redBalls[i]->mesh, shaders["Color"], redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
 	RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
 
-	if (state == BREAK)
-		cueBall->pos = UIConstants::Ball::initCueBallPos;
 	RenderColoredMesh(cueBall->mesh, shaders["Color"], cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));
 }
 
 void BallPool::FrameEnd()
 {
-	//DrawCoordinatSystem();
+	// DrawCoordinatSystem();
 }
 
 void BallPool::RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
@@ -164,7 +166,7 @@ void BallPool::OnInputUpdate(float deltaTime, int mods)
 		camera->Update(deltaTime, window->KeyHold(GLFW_KEY_W), window->KeyHold(GLFW_KEY_A), window->KeyHold(GLFW_KEY_S),
 		               window->KeyHold(GLFW_KEY_D), window->KeyHold(GLFW_KEY_Q), window->KeyHold(GLFW_KEY_E));
 
-	if (state == BALL_IN_HAND && !window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) {
+	if (gameState == BALL_IN_HAND && !window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) {
 		if (window->KeyHold(GLFW_KEY_W))
 			tryMoveCueBall(glm::vec2(0, -deltaTime));
 		else if (window->KeyHold(GLFW_KEY_A))
@@ -180,7 +182,16 @@ void BallPool::OnInputUpdate(float deltaTime, int mods)
 void BallPool::OnKeyPress(int key, int mods)
 {
 	if (key == GLFW_KEY_SPACE) // switch between First person and third person camera modes
-		camera->SwitchMode();
+	{
+		camera->SwitchMode(CameraType::ThirdPerson);
+		camera->SetTarget(cueBall->pos, UIConstants::Camera::LOOKING_DIR_THIRD_PERSON, UIConstants::Camera::DIST_TO_TARGET);
+		cue->SetTarget(cueBall->pos, camera->GetPosFromCameraSpace(UIConstants::Cue::DIR_CAMERA_SPACE), UIConstants::Ball::RAD);
+
+		if (gameState == START)
+			gameState = BREAK;
+		else if (gameState == IN_MOVE)
+			gameState = TURN;
+	}
 }
 
 void BallPool::OnKeyRelease(int key, int mods) {}
@@ -191,6 +202,8 @@ void BallPool::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 		// rotate the camera around OX and OY
 		camera->RotateOX(-deltaY * UIConstants::Camera::SENSITIVITY);
 		camera->RotateOY(-deltaX * UIConstants::Camera::SENSITIVITY);
+
+		cue->SetTarget(cueBall->pos, camera->GetPosFromCameraSpace(UIConstants::Cue::DIR_CAMERA_SPACE), UIConstants::Ball::RAD);
 	}
 }
 

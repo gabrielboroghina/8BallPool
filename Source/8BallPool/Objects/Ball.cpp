@@ -28,7 +28,7 @@ void Ball::Move(glm::vec3 delta)
 	pos += delta;
 
 	for (auto &observer : observers)
-		observer->Update(delta);
+		observer->UpdatePos(delta);
 }
 
 void Ball::AttachObserver(ITargetObserver *observer)

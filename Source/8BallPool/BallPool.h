@@ -11,11 +11,11 @@
 
 enum GameState
 {
+	START,
 	BREAK,
-	// at the game start
 	BALL_IN_HAND,
-	// put the cue ball anywhere
-	TURN
+	TURN,
+	IN_MOVE
 };
 
 class BallPool : public SimpleScene
@@ -28,7 +28,7 @@ public:
 
 private:
 	Camera *camera;
-	GameState state;
+	GameState gameState;
 	Mesh *floorMesh;
 	Texture2D *floorTexture;
 

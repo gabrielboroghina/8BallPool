@@ -7,24 +7,25 @@
 
 using namespace UIConstants::Cue;
 
-Cue::Cue()
+Cue::Cue(): translateMatrix(glm::mat4(1)), rotateMatrix(glm::mat4(1))
 {
 	std::vector<VertexFormat> vertices;
 	std::vector<unsigned short> indices;
 
-	float yBottom = 0;
+	float yBottom = -LENGTH;
 	float texSy = (1.0f - SMALL_RADIUS / BIG_RADIUS) / 2, ratio = SMALL_RADIUS / BIG_RADIUS / 360;
 
 	// Insert center
-	vertices.push_back(VertexFormat(glm::vec3(0, yBottom, 0), glm::vec3(0), glm::vec3(0), glm::vec2(1, 0.5))); // center
-	vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS, LENGTH, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy)));
+	vertices.push_back(VertexFormat(glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, 0.5)));
+	vertices.push_back(VertexFormat(glm::vec3(0, yBottom, 0), glm::vec3(0), glm::vec3(0), glm::vec2(1, 0.5)));
+	vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS, 0, 0), glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy)));
 	vertices.push_back(VertexFormat(glm::vec3(BIG_RADIUS, yBottom, 0), glm::vec3(0), glm::vec3(0), glm::vec2(1, 0)));
 
 	int last;
 	for (int u = 1; u <= 360; u++) {
-		last = u == 1 ? 1 : 4 * u - 5;
+		last = (u == 1) ? 2 : 4 * u - 4;
 		float rad = RADIANS(u);
-		vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS * cos(rad), LENGTH, SMALL_RADIUS * sin(rad)),
+		vertices.push_back(VertexFormat(glm::vec3(SMALL_RADIUS * cos(rad), 0, SMALL_RADIUS * sin(rad)),
 		                                glm::vec3(0), glm::vec3(0), glm::vec2(0, texSy + ratio * u)));
 		indices.push_back(0);
 		indices.push_back(last);
@@ -32,7 +33,7 @@ Cue::Cue()
 
 		vertices.push_back(VertexFormat(glm::vec3(BIG_RADIUS * cos(rad), yBottom, BIG_RADIUS * sin(rad)), glm::vec3(0),
 		                                glm::vec3(0), glm::vec2(1, u / 360)));
-		indices.push_back(0);
+		indices.push_back(1);
 		indices.push_back(last + 1);
 		indices.push_back((unsigned short)vertices.size() - 1);
 
@@ -67,7 +68,7 @@ Cue::Cue()
 
 	// import textures
 	textures.push_back(new Texture2D());
-	textures.back()->Load2D("Resources/Textures/cue.png", GL_REPEAT);
+	textures.back()->Load2D("Resources/Textures/cue.png", GL_MIRRORED_REPEAT);
 }
 
 Cue::~Cue()
@@ -78,4 +79,26 @@ Cue::~Cue()
 std::vector<Texture2D *> Cue::GetTextures() const
 {
 	return textures;
+}
+
+glm::mat4 Cue::GetModelMatrix() const
+{
+	return translateMatrix * rotateMatrix;
+}
+
+void Cue::UpdatePos(glm::vec3 movement)
+{
+	translateMatrix = glm::translate(translateMatrix, movement);
+}
+
+void Cue::SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget)
+{
+	dir = glm::normalize(dir);
+	translateMatrix = glm::translate(glm::mat4(1), glm::vec3(targetPos + dir * distToTarget));
+
+	glm::vec3 initCueDir = glm::vec3(0, -1, 0);
+
+	glm::vec3 N = glm::cross(initCueDir, dir); // compute the normal
+	float angle = acos(glm::dot(initCueDir, dir) / glm::length(initCueDir));
+	rotateMatrix = glm::rotate(glm::mat4(1), angle, N);
 }
