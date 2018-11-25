@@ -49,26 +49,27 @@ namespace Ball
 	const float YPOS = Table::HEIGHT + Ball::RAD;
 
 	const float headZ = -0.31f * Table::LEN;
-	const float distZ = RAD * (float)sqrt(3);
+	const float distX = RAD + 0.003f;
+	const float distZ = distX * (float)sqrt(3);
 
 	const glm::vec3 initYellowBallPos[7] = {
-		glm::vec3(-RAD, YPOS, headZ - distZ),
-		glm::vec3(2 * RAD, YPOS, headZ - 2 * distZ),
-		glm::vec3(3 * RAD, YPOS, headZ - 3 * distZ),
-		glm::vec3(-3 * RAD, YPOS, headZ - 3 * distZ),
-		glm::vec3(-4 * RAD, YPOS, headZ - 4 * distZ),
-		glm::vec3(2 * RAD, YPOS, headZ - 4 * distZ),
+		glm::vec3(-distX, YPOS, headZ - distZ),
+		glm::vec3(2 * distX, YPOS, headZ - 2 * distZ),
+		glm::vec3(3 * distX, YPOS, headZ - 3 * distZ),
+		glm::vec3(-3 * distX, YPOS, headZ - 3 * distZ),
+		glm::vec3(-4 * distX, YPOS, headZ - 4 * distZ),
+		glm::vec3(2 * distX, YPOS, headZ - 4 * distZ),
 		glm::vec3(0, YPOS, headZ - 4 * distZ),
 	};
 
 	const glm::vec3 initRedBallPos[7] = {
 		glm::vec3(0, YPOS, headZ),
-		glm::vec3(RAD, YPOS, headZ - distZ),
-		glm::vec3(-2 * RAD, YPOS, headZ - 2 * distZ),
-		glm::vec3(-RAD, YPOS, headZ - 3 * distZ),
-		glm::vec3(RAD, YPOS, headZ - 3 * distZ),
-		glm::vec3(4 * RAD, YPOS, headZ - 4 * distZ),
-		glm::vec3(-2 * RAD, YPOS, headZ - 4 * distZ),
+		glm::vec3(distX, YPOS, headZ - distZ),
+		glm::vec3(-2 * distX, YPOS, headZ - 2 * distZ),
+		glm::vec3(-distX, YPOS, headZ - 3 * distZ),
+		glm::vec3(distX, YPOS, headZ - 3 * distZ),
+		glm::vec3(4 * distX, YPOS, headZ - 4 * distZ),
+		glm::vec3(-2 * distX, YPOS, headZ - 4 * distZ),
 	};
 
 	const glm::vec3 initBlackBallPos = glm::vec3(0, YPOS, headZ - 2 * distZ);

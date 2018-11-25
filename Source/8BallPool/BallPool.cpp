@@ -159,12 +159,9 @@ void BallPool::ProcessMovements(float deltaTime)
 	using namespace UIConstants::Ball;
 	collisions.clear();
 
-	map<Ball *, float> present; // the current time for a ball
-	for (auto &ball : balls) present[ball] = 0;
-
 	float ttc; // time to collision
 	const auto InsertBallCushionCollision = [&](Ball *ball, int cushionIndex) {
-		if (ttc + present[ball] <= deltaTime) {
+		if (ttc <= deltaTime) {
 			pairs[{ball, cushion[cushionIndex]}]->t = ttc;
 			collisions.insert(pairs[{ball, cushion[cushionIndex]}]);
 		}
@@ -228,10 +225,11 @@ void BallPool::ProcessMovements(float deltaTime)
 		CollisionPair *cp = *collisions.begin();
 		deltaTime -= cp->t;
 
+		for (auto &ball : balls) ball->Update(cp->t);
+
 		Ball *ball = cp->a;
 		if (cp->b->isCushion) {
 			// ball-cushion collision
-			ball->Update(cp->t);
 			switch (static_cast<Cushion *>(cp->b)->type) {
 				case 0:
 				case 2:
@@ -242,7 +240,6 @@ void BallPool::ProcessMovements(float deltaTime)
 					ball->velocity.y *= -1;
 					break;
 			}
-			present[ball] += cp->t; // ball advanced in time
 
 			collisions.erase(collisions.begin());
 
@@ -250,19 +247,12 @@ void BallPool::ProcessMovements(float deltaTime)
 		}
 		else {
 			// ball-ball collision
-			printf("ball collision\n");
 			Ball *ball2 = static_cast<Ball *>(cp->b);
-
-			ball->Update(cp->t);
-			ball2->Update(cp->t);
 
 			glm::vec2 dv(ball->velocity - ball2->velocity);
 			glm::vec2 dx(ball->pos.x - ball2->pos.x, ball->pos.z - ball2->pos.z);
 			ball->velocity -= glm::dot(dv, dx) * dx / pow(glm::length(dx), 2);
 			ball2->velocity -= glm::dot(-dv, -dx) * (-dx) / pow(glm::length(dx), 2);
-
-			present[ball] += cp->t; // ball advanced in time
-			present[ball2] += cp->t; // ball advanced in time
 
 			for (auto it = collisions.begin(); it != collisions.end();)
 				if ((*it)->a == ball || (*it)->a == ball2 || (*it)->b == ball || (*it)->b == ball2)
@@ -276,10 +266,8 @@ void BallPool::ProcessMovements(float deltaTime)
 		}
 	}
 
-	for (auto &ball : balls) {
-		// bring the balls to present (move without collisions)
-		ball->Update(deltaTime - present[ball]);
-	}
+	for (auto &ball : balls)
+		ball->Update(deltaTime); // bring the balls to present (move without collisions)
 }
 
 void BallPool::Update(float deltaTimeSeconds)
