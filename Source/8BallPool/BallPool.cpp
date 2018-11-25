@@ -163,73 +163,75 @@ void BallPool::ProcessMovements(float deltaTime)
 	for (auto &ball : balls) present[ball] = 0;
 
 	float ttc; // time to collision
-	const auto insCollision = [&](Ball *ball, int cushionIndex) {
+	const auto InsertBallCushionCollision = [&](Ball *ball, int cushionIndex) {
 		if (ttc + present[ball] <= deltaTime) {
 			pairs[{ball, cushion[cushionIndex]}]->t = ttc;
 			collisions.insert(pairs[{ball, cushion[cushionIndex]}]);
 		}
 	};
 
-	for (auto &ball : balls) {
+	const auto DetectBallChusionCollision = [&](Ball *ball) {
 		float vx = ball->velocity.x, vy = ball->velocity.y;
 		// left cushion
 		if (vx < 0) {
 			ttc = (-vx - sqrt(pow(vx, 2) + 2 * ACC * (-limX - ball->pos.x))) / ACC;
-			insCollision(ball, 0);
+			InsertBallCushionCollision(ball, 0);
 		}
 		// top cushion
 		if (vx > 0) {
 			ttc = (-vx + sqrt(pow(vx, 2) + 2 * ACC * (limX - ball->pos.x))) / ACC;
-			insCollision(ball, 2);
+			InsertBallCushionCollision(ball, 2);
 		}
 		// right cushion
 		if (vy < 0) {
 			ttc = (-vy - sqrt(pow(vy, 2) + 2 * ACC * (-limY - ball->pos.z))) / ACC;
-			insCollision(ball, 1);
+			InsertBallCushionCollision(ball, 1);
 		}
 		// bottom cushion
 		if (vy > 0) {
 			ttc = (-vy + sqrt(pow(vy, 2) + 2 * ACC * (limY - ball->pos.z))) / ACC;
-			insCollision(ball, 3);
+			InsertBallCushionCollision(ball, 3);
 		}
-	}
+	};
+
+	const auto DetectBallBallCollision = [&](Ball *ball, Ball *ball2) {
+		float px = ball->pos.x - ball2->pos.x, py = ball->pos.z - ball2->pos.z;
+		float Vx = ball->velocity.x - ball2->velocity.x, Vy = ball->velocity.y - ball2->velocity.y;
+
+		// 2nd grade function: the distance between the balls function of time
+		float a = Vx * Vx + Vy * Vy;
+		if (a == 0) return;
+		float b = 2 * (px * Vx + py * Vy);
+		float c = px * px + py * py - 4 * RAD * RAD;
+		float d = sqrt(b * b - 4 * a * c);
+		float r1 = (-b - d) / (2 * a);
+
+		if (0 < r1 && r1 <= deltaTime) {
+			pairs[{ball, ball2}]->t = r1;
+			collisions.insert(pairs[{ball, ball2}]);
+		}
+	};
+
+	for (auto &ball : balls)
+		DetectBallChusionCollision(ball);
 
 	// detect balls collisions
 	for (auto it = balls.begin(); it != balls.end(); ++it) {
 		auto it2 = it;
 		++it2;
-		for (; it2 != balls.end(); ++it2) {
-			float px = (*it)->pos.x - (*it2)->pos.x, py = (*it)->pos.y - (*it2)->pos.y;
-			float Vx = (*it)->velocity.x - (*it2)->velocity.x, Vy = (*it)->velocity.y - (*it2)->velocity.y;
-			// 2nd grade function: the distance between the balls function of time
-			float a = Vx * Vx + Vy * Vy;
-			if (a == 0) continue;
-			float b = 2 * (px * Vx + py * Vy);
-			float c = px * px + py * py - 4 * RAD * RAD;
-			float d = sqrt(b * b - 4 * a * c);
-			float r1 = (-b - d) / (2 * a);
-			if (0 < r1 && r1 <= deltaTime) {
-				pairs[{*it, *it2}]->t = r1;
-				collisions.insert(pairs[{*it, *it2}]);
-			}
-		}
+		for (; it2 != balls.end(); ++it2)
+			DetectBallBallCollision(*it, *it2);
 	}
 
 	while (!collisions.empty()) {
 		// process the first collision
 		CollisionPair *cp = *collisions.begin();
+		deltaTime -= cp->t;
 
 		Ball *ball = cp->a;
 		if (cp->b->isCushion) {
 			// ball-cushion collision
-			float v_abs = glm::length(ball->velocity);
-			if (v_abs > 0) {
-				float t = max(v_abs / ACC, cp->t);
-				ball->pos.x += ball->velocity.x * t + ACC * t * t / 2;
-				ball->pos.z += ball->velocity.y * t + ACC * t * t / 2;
-
-				ball->velocity = glm::normalize(ball->velocity) * std::max(v_abs + ACC * cp->t, 0.0f);
-			}
+			ball->Update(cp->t);
 			switch (static_cast<Cushion *>(cp->b)->type) {
 				case 0:
 				case 2:
@@ -241,30 +243,42 @@ void BallPool::ProcessMovements(float deltaTime)
 					break;
 			}
 			present[ball] += cp->t; // ball advanced in time
+
+			collisions.erase(collisions.begin());
+
+			// TODO update elements from set
 		}
 		else {
 			// ball-ball collision
 			printf("ball collision\n");
 			Ball *ball2 = static_cast<Ball *>(cp->b);
 
+			ball->Update(cp->t);
+			ball2->Update(cp->t);
+
+			glm::vec2 dv(ball->velocity - ball2->velocity);
+			glm::vec2 dx(ball->pos.x - ball2->pos.x, ball->pos.z - ball2->pos.z);
+			ball->velocity -= glm::dot(dv, dx) * dx / pow(glm::length(dx), 2);
+			ball2->velocity -= glm::dot(-dv, -dx) * (-dx) / pow(glm::length(dx), 2);
+
 			present[ball] += cp->t; // ball advanced in time
 			present[ball2] += cp->t; // ball advanced in time
-		}
 
-		collisions.erase(collisions.begin());
-		// TODO update elements from set
+			for (auto it = collisions.begin(); it != collisions.end();)
+				if ((*it)->a == ball || (*it)->a == ball2 || (*it)->b == ball || (*it)->b == ball2)
+					it = collisions.erase(it);
+				else ++it;
+
+			for (auto &ball3 : balls) {
+				if (ball3 != ball) DetectBallBallCollision(ball, ball3);
+				if (ball3 != ball2) DetectBallBallCollision(ball2, ball3);
+			}
+		}
 	}
 
 	for (auto &ball : balls) {
 		// bring the balls to present (move without collisions)
-		float v_abs = glm::length(ball->velocity);
-		if (v_abs > 0) {
-			float t = max(v_abs / ACC, deltaTime - present[ball]);
-			ball->pos.x += ball->velocity.x * t + ACC * t * t / 2;
-			ball->pos.z += ball->velocity.y * t + ACC * t * t / 2;
-
-			ball->velocity = glm::normalize(ball->velocity) * std::max(v_abs + ACC * t, 0.0f);
-		}
+		ball->Update(deltaTime - present[ball]);
 	}
 }
 

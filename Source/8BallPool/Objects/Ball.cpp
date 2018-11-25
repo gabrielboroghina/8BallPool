@@ -4,6 +4,8 @@
 #include "8BallPool/UIConstants.h"
 #include <algorithm>
 
+using namespace UIConstants::Ball;
+
 Ball::Ball(const glm::vec3 &initialPos) : pos(initialPos), velocity(0)
 {
 	mesh = new Mesh("ball");
@@ -20,7 +22,6 @@ glm::vec2 Ball::Get2DPos() const
 
 glm::mat4 Ball::GetModelMatrix() const
 {
-	using namespace UIConstants::Ball;
 	float scaleFactor = 2 * RAD;
 	return scale(translate(glm::mat4(1), pos), glm::vec3(scaleFactor, scaleFactor, scaleFactor));
 }
@@ -46,5 +47,11 @@ void Ball::ReceiveVelocity(glm::vec2 v)
 void Ball::Update(float deltaTime)
 {
 	// update the effect of friction
-	
+	float v_abs = glm::length(velocity);
+	if (v_abs > 0) {
+		float t = std::max(v_abs / ACC, deltaTime);
+		pos.x += velocity.x * t + ACC * t * t / 2;
+		pos.z += velocity.y * t + ACC * t * t / 2;
+		velocity = glm::normalize(velocity) * std::max(v_abs + ACC * t, 0.0f);
+	}
 }
