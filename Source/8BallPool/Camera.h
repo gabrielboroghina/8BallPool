@@ -2,6 +2,7 @@
 
 #include <include/glm.h>
 #include "ITargetObserver.h"
+#include "include/math.h"
 
 enum CameraType
 {

@@ -86,7 +86,8 @@ std::vector<Texture2D *> Cue::GetTextures() const
 
 glm::mat4 Cue::GetModelMatrix() const
 {
-	return glm::translate(translateMatrix, glm::vec3(cueDir * pullBackDist)) * rotateMatrix;
+	return glm::translate(translateMatrix, glm::vec3(cueDir * pullBackDist)) * rotateMatrix *
+		glm::scale(glm::mat4(1), glm::vec3(1.5f, 1.5f, 1.5f));
 }
 
 void Cue::PullBack(float dist)

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
 #include <include/glm.h>
-#include "include/math.h"
 
 namespace UIConstants
 {
@@ -74,6 +72,6 @@ namespace Ball
 	const glm::vec3 initCueBallPos = glm::vec3(0, YPOS, -headZ);
 
 	const float BALL_IN_HAND_SPEED = 1.5f;
-	const float FRICTION_ACC = -0.9; // friction coefficient
+	const float FRICTION_ACC = -1; // friction coefficient
 }
 }

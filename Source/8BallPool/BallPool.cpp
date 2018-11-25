@@ -50,7 +50,11 @@ void BallPool::Init()
 	cueBall->AttachObserver(camera);
 	cueBall->AttachObserver(cue);
 
-	gameState = IN_MOVE;
+	gameState = START;
+
+	// compute some helpful constants
+	limX = UIConstants::Table::WIDTH / 2 - UIConstants::Ball::RAD;
+	limY = UIConstants::Table::LEN / 2 - UIConstants::Ball::RAD;
 }
 
 void BallPool::InitBalls()
@@ -58,17 +62,50 @@ void BallPool::InitBalls()
 	for (int i = 0; i < 7; i++) {
 		yellowBalls[i] = new Ball(UIConstants::Ball::initYellowBallPos[i]);
 		redBalls[i] = new Ball(UIConstants::Ball::initRedBallPos[i]);
+
+		gameBalls.push_back(yellowBalls[i]);
+		gameBalls.push_back(redBalls[i]);
 	}
 
 	blackBall = new Ball(UIConstants::Ball::initBlackBallPos);
+	gameBalls.push_back(blackBall);
 	cueBall = new Ball(UIConstants::Ball::initCueBallPos);
 }
 
 void BallPool::tryMoveCueBall(const glm::vec2 &move)
 {
-	// TODO check collisions
 	using namespace UIConstants::Ball;
-	cueBall->Move(glm::vec3(move.x * BALL_IN_HAND_SPEED, 0, move.y * BALL_IN_HAND_SPEED));
+	using namespace UIConstants::Table;
+	float distX = move.x * BALL_IN_HAND_SPEED;
+	float distY = move.y * BALL_IN_HAND_SPEED;
+
+	// check cushions touches during the move
+	if (cueBall->pos.x + distX < -limX)
+		distX = -limX - cueBall->pos.x, distY = distX * move.y / move.x;
+	if (cueBall->pos.x + distX > limX)
+		distX = limX - cueBall->pos.x, distY = distX * move.y / move.x;
+	if (cueBall->pos.z + distY < -limY)
+		distY = -limY - cueBall->pos.z, distX = distY * move.x / move.y;
+	if (cueBall->pos.z + distY > limY)
+		distY = limY - cueBall->pos.z, distX = distY * move.x / move.y;
+
+	// check balls touches during move
+	float fmax = 1;
+	for (auto &ball : gameBalls) {
+		float a = distX * distX + distY * distY;
+		float rx = ball->pos.x - cueBall->pos.x, ry = ball->pos.z - cueBall->pos.z;
+		float b = -2 * (rx * distX + ry * distY);
+		float c = pow(rx, 2) + pow(ry, 2) - 4 * RAD * RAD;
+		float d = sqrt(b * b - 4 * a * c);
+		float r1 = (-b - d) / (2 * a);
+		if (0 < r1 && r1 < 1)
+			fmax = min(fmax, r1);
+		else if (r1 <= 0 && 0 <= -b / (2 * a))
+			fmax = 0;
+	}
+	printf("%f\n-----------------------", fmax);
+
+	cueBall->Move(glm::vec3(fmax * distX, 0, /*max*/(fmax * distY/* LEN / 6 + RAD - cueBall->pos.z*/)));
 }
 
 void BallPool::FrameStart()
@@ -93,7 +130,7 @@ void BallPool::UpdateCue(float deltaTime)
 			// launch cue ball
 			cue->pullBackDist = 0;
 			cueShotRunning = 0;
-			cueBall->ReceiveVelocity(-glm::vec2(cue->cueDir.x, cue->cueDir.z) * (cueShotDist * 2.5f));
+			cueBall->ReceiveVelocity(-glm::vec2(cue->cueDir.x, cue->cueDir.z) * (cueShotDist * 4));
 		}
 	}
 }
@@ -103,7 +140,7 @@ void BallPool::Update(float deltaTimeSeconds)
 	RenderTexturedMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
 	UpdateCue(deltaTimeSeconds);
-	if (gameState != GameState::IN_MOVE)
+	if (gameState != IN_MOVE && gameState != START)
 		RenderTexturedMesh(cue->mesh, shaders["Texture"], cue->GetModelMatrix(), cue->GetTextures());
 
 	for (auto comp : poolTable->texComps)
@@ -206,7 +243,7 @@ void BallPool::OnKeyPress(int key, int mods)
 		cue->SetTarget(cueBall->pos, camera->GetPosFromCameraSpace(UIConstants::Cue::DIR_CAMERA_SPACE), UIConstants::Ball::RAD);
 
 		if (gameState == START)
-			gameState = BREAK;
+			gameState = BALL_IN_HAND;
 		else if (gameState == IN_MOVE)
 			gameState = TURN;
 	}
@@ -227,7 +264,7 @@ void BallPool::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void BallPool::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
-	if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_LEFT) && gameState == TURN || gameState == BREAK)
+	if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_LEFT) && (gameState == TURN || gameState == BREAK))
 		cueShotRunning = UIConstants::Cue::PULL_BACK_SPEED_FACTOR;
 }
 
@@ -236,6 +273,9 @@ void BallPool::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 	if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_LEFT)) {
 		cueShotDist = cue->pullBackDist;
 		cueShotRunning = UIConstants::Cue::RETURN_SPEED_FACTOR;
+
+		camera->SwitchMode(FirstPerson, CameraLayout::TopDown);
+		gameState = IN_MOVE;
 	}
 }
 

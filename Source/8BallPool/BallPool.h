@@ -36,9 +36,12 @@ private:
 	Cue *cue;
 	PoolTable *poolTable;
 	Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall;
+	std::vector<Ball *> gameBalls;
 
 	int cueShotRunning;
 	float cueShotDist;
+
+	float limX, limY;
 
 	void FrameStart() override;
 	void Update(float deltaTimeSeconds) override;
