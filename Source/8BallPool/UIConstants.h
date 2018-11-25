@@ -36,6 +36,9 @@ namespace Table
 	const float WIDTH = 2.5f;
 	const float HEIGHT = 1.0f;
 	const float CORNER_RAD = 0.1f;
+	const float MARGIN_W = 0.1f;
+	const float MARGIN_H = 0.3f;
+
 	const glm::vec3 wallColor(0.06f, 0.02f, 0.0f);
 }
 
@@ -72,6 +75,6 @@ namespace Ball
 	const glm::vec3 initCueBallPos = glm::vec3(0, YPOS, -headZ);
 
 	const float BALL_IN_HAND_SPEED = 1.5f;
-	const float FRICTION_ACC = -1; // friction coefficient
+	const float ACC = -1; // friction coefficient
 }
 }

@@ -4,8 +4,12 @@
 #include <iostream>
 #include <Core/Engine.h>
 #include <Core/GPU/Texture2D.h>
+#include <set>
 
 using namespace std;
+
+const auto cmpTime = [](const CollisionPair *x, const CollisionPair *y) { return x->t < y->t; };
+std::set<CollisionPair *, decltype(cmpTime)> collisions(cmpTime); // collisions sorting (by time) set
 
 BallPool::BallPool() : cueShotRunning(false) {}
 
@@ -39,6 +43,9 @@ void BallPool::Init()
 	LoadShader("Texture");
 
 	// initialize objects
+	for (int i = 0; i < 4; i++)
+		cushion[i] = new Cushion(i);
+
 	InitBalls();
 	cue = new Cue();
 	poolTable = new PoolTable();
@@ -63,16 +70,29 @@ void BallPool::InitBalls()
 		yellowBalls[i] = new Ball(UIConstants::Ball::initYellowBallPos[i]);
 		redBalls[i] = new Ball(UIConstants::Ball::initRedBallPos[i]);
 
-		gameBalls.push_back(yellowBalls[i]);
-		gameBalls.push_back(redBalls[i]);
+		gameBalls.insert(yellowBalls[i]);
+		gameBalls.insert(redBalls[i]);
 	}
 
 	blackBall = new Ball(UIConstants::Ball::initBlackBallPos);
-	gameBalls.push_back(blackBall);
+	gameBalls.insert(blackBall);
 	cueBall = new Ball(UIConstants::Ball::initCueBallPos);
+
+	balls = gameBalls;
+	balls.insert(cueBall);
+
+	// init collisions pairs
+	for (auto &ball : balls) {
+		for (int i = 0; i < 4; i++)
+			pairs[make_pair(ball, cushion[i])] = new CollisionPair(ball, cushion[i]);
+
+		for (auto &ball2 : balls)
+			if (ball != ball2)
+				pairs[make_pair(ball, ball2)] = new CollisionPair(ball, ball2);
+	}
 }
 
-void BallPool::tryMoveCueBall(const glm::vec2 &move)
+void BallPool::TryMoveCueBall(const glm::vec2 &move)
 {
 	using namespace UIConstants::Ball;
 	using namespace UIConstants::Table;
@@ -103,7 +123,6 @@ void BallPool::tryMoveCueBall(const glm::vec2 &move)
 		else if (r1 <= 0 && 0 <= -b / (2 * a))
 			fmax = 0;
 	}
-	printf("%f\n-----------------------", fmax);
 
 	cueBall->Move(glm::vec3(fmax * distX, 0, /*max*/(fmax * distY/* LEN / 6 + RAD - cueBall->pos.z*/)));
 }
@@ -135,8 +154,123 @@ void BallPool::UpdateCue(float deltaTime)
 	}
 }
 
+void BallPool::ProcessMovements(float deltaTime)
+{
+	using namespace UIConstants::Ball;
+	collisions.clear();
+
+	map<Ball *, float> present; // the current time for a ball
+	for (auto &ball : balls) present[ball] = 0;
+
+	float ttc; // time to collision
+	const auto insCollision = [&](Ball *ball, int cushionIndex) {
+		if (ttc + present[ball] <= deltaTime) {
+			pairs[{ball, cushion[cushionIndex]}]->t = ttc;
+			collisions.insert(pairs[{ball, cushion[cushionIndex]}]);
+		}
+	};
+
+	for (auto &ball : balls) {
+		float vx = ball->velocity.x, vy = ball->velocity.y;
+		// left cushion
+		if (vx < 0) {
+			ttc = (-vx - sqrt(pow(vx, 2) + 2 * ACC * (-limX - ball->pos.x))) / ACC;
+			insCollision(ball, 0);
+		}
+		// top cushion
+		if (vx > 0) {
+			ttc = (-vx + sqrt(pow(vx, 2) + 2 * ACC * (limX - ball->pos.x))) / ACC;
+			insCollision(ball, 2);
+		}
+		// right cushion
+		if (vy < 0) {
+			ttc = (-vy - sqrt(pow(vy, 2) + 2 * ACC * (-limY - ball->pos.z))) / ACC;
+			insCollision(ball, 1);
+		}
+		// bottom cushion
+		if (vy > 0) {
+			ttc = (-vy + sqrt(pow(vy, 2) + 2 * ACC * (limY - ball->pos.z))) / ACC;
+			insCollision(ball, 3);
+		}
+	}
+
+	// detect balls collisions
+	for (auto it = balls.begin(); it != balls.end(); ++it) {
+		auto it2 = it;
+		++it2;
+		for (; it2 != balls.end(); ++it2) {
+			float px = (*it)->pos.x - (*it2)->pos.x, py = (*it)->pos.y - (*it2)->pos.y;
+			float Vx = (*it)->velocity.x - (*it2)->velocity.x, Vy = (*it)->velocity.y - (*it2)->velocity.y;
+			// 2nd grade function: the distance between the balls function of time
+			float a = Vx * Vx + Vy * Vy;
+			if (a == 0) continue;
+			float b = 2 * (px * Vx + py * Vy);
+			float c = px * px + py * py - 4 * RAD * RAD;
+			float d = sqrt(b * b - 4 * a * c);
+			float r1 = (-b - d) / (2 * a);
+			if (0 < r1 && r1 <= deltaTime) {
+				pairs[{*it, *it2}]->t = r1;
+				collisions.insert(pairs[{*it, *it2}]);
+			}
+		}
+	}
+
+	while (!collisions.empty()) {
+		// process the first collision
+		CollisionPair *cp = *collisions.begin();
+
+		Ball *ball = cp->a;
+		if (cp->b->isCushion) {
+			// ball-cushion collision
+			float v_abs = glm::length(ball->velocity);
+			if (v_abs > 0) {
+				float t = max(v_abs / ACC, cp->t);
+				ball->pos.x += ball->velocity.x * t + ACC * t * t / 2;
+				ball->pos.z += ball->velocity.y * t + ACC * t * t / 2;
+
+				ball->velocity = glm::normalize(ball->velocity) * std::max(v_abs + ACC * cp->t, 0.0f);
+			}
+			switch (static_cast<Cushion *>(cp->b)->type) {
+				case 0:
+				case 2:
+					ball->velocity.x *= -1;
+					break;
+				case 1:
+				case 3:
+					ball->velocity.y *= -1;
+					break;
+			}
+			present[ball] += cp->t; // ball advanced in time
+		}
+		else {
+			// ball-ball collision
+			printf("ball collision\n");
+			Ball *ball2 = static_cast<Ball *>(cp->b);
+
+			present[ball] += cp->t; // ball advanced in time
+			present[ball2] += cp->t; // ball advanced in time
+		}
+
+		collisions.erase(collisions.begin());
+		// TODO update elements from set
+	}
+
+	for (auto &ball : balls) {
+		// bring the balls to present (move without collisions)
+		float v_abs = glm::length(ball->velocity);
+		if (v_abs > 0) {
+			float t = max(v_abs / ACC, deltaTime - present[ball]);
+			ball->pos.x += ball->velocity.x * t + ACC * t * t / 2;
+			ball->pos.z += ball->velocity.y * t + ACC * t * t / 2;
+
+			ball->velocity = glm::normalize(ball->velocity) * std::max(v_abs + ACC * t, 0.0f);
+		}
+	}
+}
+
 void BallPool::Update(float deltaTimeSeconds)
 {
+	ProcessMovements(deltaTimeSeconds);
 	RenderTexturedMesh(floorMesh, shaders["TextureByPos"], glm::mat4(1), {floorTexture});
 
 	UpdateCue(deltaTimeSeconds);
@@ -154,9 +288,8 @@ void BallPool::Update(float deltaTimeSeconds)
 		RenderColoredMesh(yellowBalls[i]->mesh, shaders["Color"], yellowBalls[i]->GetModelMatrix(), glm::vec3(1, 1, 0));
 	for (int i = 0; i < 7; i++)
 		RenderColoredMesh(redBalls[i]->mesh, shaders["Color"], redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
-	RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
 
-	cueBall->Update(deltaTimeSeconds);
+	RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
 	RenderColoredMesh(cueBall->mesh, shaders["Color"], cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));
 }
 
@@ -223,13 +356,13 @@ void BallPool::OnInputUpdate(float deltaTime, int mods)
 
 	if (gameState == BALL_IN_HAND && !window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) {
 		if (window->KeyHold(GLFW_KEY_W))
-			tryMoveCueBall(glm::vec2(0, -deltaTime));
+			TryMoveCueBall(glm::vec2(0, -deltaTime));
 		else if (window->KeyHold(GLFW_KEY_A))
-			tryMoveCueBall(glm::vec2(-deltaTime, 0));
+			TryMoveCueBall(glm::vec2(-deltaTime, 0));
 		else if (window->KeyHold(GLFW_KEY_S))
-			tryMoveCueBall(glm::vec2(0, deltaTime));
+			TryMoveCueBall(glm::vec2(0, deltaTime));
 		else if (window->KeyHold(GLFW_KEY_D))
-			tryMoveCueBall(glm::vec2(deltaTime, 0));
+			TryMoveCueBall(glm::vec2(deltaTime, 0));
 	}
 }
 
@@ -243,7 +376,7 @@ void BallPool::OnKeyPress(int key, int mods)
 		cue->SetTarget(cueBall->pos, camera->GetPosFromCameraSpace(UIConstants::Cue::DIR_CAMERA_SPACE), UIConstants::Ball::RAD);
 
 		if (gameState == START)
-			gameState = BALL_IN_HAND;
+			gameState = BREAK;
 		else if (gameState == IN_MOVE)
 			gameState = TURN;
 	}

@@ -163,6 +163,12 @@
     <ClCompile Include="..\Source\8BallPool\Objects\Ball.cpp">
       <Filter>8BallPool\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\8BallPool\Objects\Cushion.cpp">
+      <Filter>8BallPool\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\8BallPool\Objects\Object.cpp">
+      <Filter>8BallPool\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Core\World.h">
@@ -287,6 +293,12 @@
     </ClInclude>
     <ClInclude Include="..\Source\8BallPool\ITargetObserver.h">
       <Filter>8BallPool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\8BallPool\Objects\Cushion.h">
+      <Filter>8BallPool\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\8BallPool\Objects\Object.h">
+      <Filter>8BallPool\Objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -46,18 +46,17 @@ PoolTable::PoolTable()
 	mesh = new Mesh("wall");
 	mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "box.obj");
 
-	float e = 0.05f;
+	float e = MARGIN_W / 2;
 	for (int i = -1; i <= 1; i += 2) {
 		colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(i * (WIDTH / 2 + e), HEIGHT, 0)),
-		                                                        glm::vec3(0.1f, 0.3f, LEN + 2 * CORNER_RAD))));
+		                                                        glm::vec3(MARGIN_W, MARGIN_H, LEN + 2 * CORNER_RAD))));
 		colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(0, HEIGHT, i * (LEN / 2 + e))),
-		                                                        glm::vec3(WIDTH, 0.3f, 0.1f))));
+		                                                        glm::vec3(WIDTH, MARGIN_H, MARGIN_W))));
 	}
 	// load texture
 	texture = new Texture2D();
 	texture->Load2D("Resources/Textures/table.jpg", GL_REPEAT);
 }
-
 
 PoolTable::~PoolTable()
 {

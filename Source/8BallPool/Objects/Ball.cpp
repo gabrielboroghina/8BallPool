@@ -45,11 +45,6 @@ void Ball::ReceiveVelocity(glm::vec2 v)
 
 void Ball::Update(float deltaTime)
 {
-	pos.x += velocity.x * deltaTime;
-	pos.z += velocity.y * deltaTime;
-
 	// update the effect of friction
-	float v_abs = glm::length(velocity);
-	if (v_abs > 0)
-		velocity = glm::normalize(velocity) * std::max(v_abs + UIConstants::Ball::FRICTION_ACC * deltaTime, 0.0f);
+	
 }

@@ -2,13 +2,17 @@
 
 #include "Core/GPU/Mesh.h"
 #include "8BallPool/ITargetObserver.h"
+#include "Object.h"
 
-class Ball
+class Ball : public Object
 {
-	glm::vec2 velocity;
 	std::vector<ITargetObserver *> observers; // observers of the ball movement
 
 public:
+	glm::vec3 pos;
+	Mesh *mesh;
+	glm::vec2 velocity;
+
 	Ball(const glm::vec3 &initialPos);
 	~Ball();
 
@@ -18,7 +22,4 @@ public:
 	void AttachObserver(ITargetObserver *observer);
 	void ReceiveVelocity(glm::vec2 v);
 	void Update(float deltaTime);
-
-	glm::vec3 pos;
-	Mesh *mesh;
 };
