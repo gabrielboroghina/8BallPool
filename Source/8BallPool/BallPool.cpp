@@ -149,7 +149,7 @@ void BallPool::UpdateCue(float deltaTime)
 			// launch cue ball
 			cue->pullBackDist = 0;
 			cueShotRunning = 0;
-			cueBall->ReceiveVelocity(-glm::vec2(cue->cueDir.x, cue->cueDir.z) * (cueShotDist * 4));
+			cueBall->ReceiveVelocity(-glm::vec2(cue->cueDir.x, cue->cueDir.z) * (cueShotDist * 6));
 		}
 	}
 }
@@ -157,7 +157,6 @@ void BallPool::UpdateCue(float deltaTime)
 void BallPool::ProcessMovements(float deltaTime)
 {
 	using namespace UIConstants::Ball;
-	collisions.clear();
 
 	float ttc; // time to collision
 	const auto InsertBallCushionCollision = [&](Ball *ball, int cushionIndex) {
@@ -200,7 +199,9 @@ void BallPool::ProcessMovements(float deltaTime)
 		if (a == 0) return;
 		float b = 2 * (px * Vx + py * Vy);
 		float c = px * px + py * py - 4 * RAD * RAD;
-		float d = sqrt(b * b - 4 * a * c);
+		float d = b * b - 4 * a * c;
+		if (d < 0) return;
+		d = sqrt(d);
 		float r1 = (-b - d) / (2 * a);
 
 		if (0 < r1 && r1 <= deltaTime) {
@@ -209,23 +210,37 @@ void BallPool::ProcessMovements(float deltaTime)
 		}
 	};
 
-	for (auto &ball : balls)
-		DetectBallChusionCollision(ball);
+	const auto FindAllCollisions = [&]() {
+		collisions.clear();
+		for (auto &b : balls)
+			DetectBallChusionCollision(b);
 
-	// detect balls collisions
-	for (auto it = balls.begin(); it != balls.end(); ++it) {
-		auto it2 = it;
-		++it2;
-		for (; it2 != balls.end(); ++it2)
-			DetectBallBallCollision(*it, *it2);
-	}
+		// detect balls collisions
+		for (auto it = balls.begin(); it != balls.end(); ++it) {
+			auto it2 = it;
+			++it2;
+			for (; it2 != balls.end(); ++it2)
+				DetectBallBallCollision(*it, *it2);
+		}
+	};
 
+	FindAllCollisions();
 	while (!collisions.empty()) {
 		// process the first collision
 		CollisionPair *cp = *collisions.begin();
-		deltaTime -= cp->t;
 
+		deltaTime -= cp->t;
 		for (auto &ball : balls) ball->Update(cp->t);
+
+		// TODO delete
+		for (auto it = balls.begin(); it != balls.end(); ++it) {
+			auto it2 = it;
+			++it2;
+			for (; it2 != balls.end(); ++it2)
+				if (distance((*it)->pos, (*it2)->pos) < 2 * RAD) {
+					printf("%f\n", distance((*it)->pos, (*it2)->pos) - 2 * RAD);
+				}
+		}
 
 		Ball *ball = cp->a;
 		if (cp->b->isCushion) {
@@ -240,10 +255,6 @@ void BallPool::ProcessMovements(float deltaTime)
 					ball->velocity.y *= -1;
 					break;
 			}
-
-			collisions.erase(collisions.begin());
-
-			// TODO update elements from set
 		}
 		else {
 			// ball-ball collision
@@ -253,21 +264,23 @@ void BallPool::ProcessMovements(float deltaTime)
 			glm::vec2 dx(ball->pos.x - ball2->pos.x, ball->pos.z - ball2->pos.z);
 			ball->velocity -= glm::dot(dv, dx) * dx / pow(glm::length(dx), 2);
 			ball2->velocity -= glm::dot(-dv, -dx) * (-dx) / pow(glm::length(dx), 2);
-
-			for (auto it = collisions.begin(); it != collisions.end();)
-				if ((*it)->a == ball || (*it)->a == ball2 || (*it)->b == ball || (*it)->b == ball2)
-					it = collisions.erase(it);
-				else ++it;
-
-			for (auto &ball3 : balls) {
-				if (ball3 != ball) DetectBallBallCollision(ball, ball3);
-				if (ball3 != ball2) DetectBallBallCollision(ball2, ball3);
-			}
 		}
+
+		FindAllCollisions();
 	}
 
 	for (auto &ball : balls)
 		ball->Update(deltaTime); // bring the balls to present (move without collisions)
+	
+	// TODO delete
+	for (auto it = balls.begin(); it != balls.end(); ++it) {
+		auto it2 = it;
+		++it2;
+		for (; it2 != balls.end(); ++it2)
+			if (distance((*it)->pos, (*it2)->pos) < 2 * RAD) {
+				printf("%f\n", distance((*it)->pos, (*it2)->pos) - 2 * RAD);
+			}
+	}
 }
 
 void BallPool::Update(float deltaTimeSeconds)

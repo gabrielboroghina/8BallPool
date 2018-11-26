@@ -50,8 +50,9 @@ void Ball::Update(float deltaTime)
 	float v_abs = glm::length(velocity);
 	if (v_abs > 0) {
 		float t = std::max(v_abs / ACC, deltaTime);
-		pos.x += velocity.x * t + ACC * t * t / 2;
-		pos.z += velocity.y * t + ACC * t * t / 2;
+		glm::vec2 movement = glm::normalize(velocity) * (std::max(v_abs + ACC * t / 2, 0.0f) * t);
+		pos.x += movement.x;
+		pos.z += movement.y;
 		velocity = glm::normalize(velocity) * std::max(v_abs + ACC * t, 0.0f);
 	}
 }

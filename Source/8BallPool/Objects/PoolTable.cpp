@@ -34,13 +34,12 @@ PoolTable::PoolTable()
 	components.push_back(std::make_pair(
 		MeshBuilder::CreateRoundedTriangle(0, CORNER_RAD, CORNER_RAD, CORNER_RAD, CORNER_RAD), reflectOZ(cornersT)));*/
 
-	float halfL = LEN / 2 - 0.05f, halfW = WIDTH / 2 - 0.05f;
 	for (int i = -1; i <= 1; i += 2) {
-		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * halfW, HEIGHT + 0.01f, halfL)),
+		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * POCKET_X, HEIGHT + 0.01f, POCKET_Z)),
 		                                 glm::vec3(0), glm::mat4(1)));
-		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * halfW, HEIGHT + 0.01f, -halfL)),
+		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * POCKET_X, HEIGHT + 0.01f, -POCKET_Z)),
 		                                 glm::vec3(0), glm::mat4(1)));
-		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * (halfW + 0.05), HEIGHT + 0.01f, 0)),
+		colorComps.push_back(ColoredComp(MeshBuilder::CreateDisk(CORNER_RAD, glm::vec3(i * POCKET_X_CENTER, HEIGHT + 0.01f, 0)),
 		                                 glm::vec3(0), glm::mat4(1)));
 	}
 	mesh = new Mesh("wall");
@@ -49,7 +48,7 @@ PoolTable::PoolTable()
 	float e = MARGIN_W / 2;
 	for (int i = -1; i <= 1; i += 2) {
 		colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(i * (WIDTH / 2 + e), HEIGHT, 0)),
-		                                                        glm::vec3(MARGIN_W, MARGIN_H, LEN + 2 * CORNER_RAD))));
+		                                                        glm::vec3(MARGIN_W, MARGIN_H, LEN + 2 * MARGIN_W))));
 		colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(0, HEIGHT, i * (LEN / 2 + e))),
 		                                                        glm::vec3(WIDTH, MARGIN_H, MARGIN_W))));
 	}

@@ -35,9 +35,13 @@ namespace Table
 	const float LEN = 4.5f;
 	const float WIDTH = 2.5f;
 	const float HEIGHT = 1.0f;
-	const float CORNER_RAD = 0.1f;
+	const float CORNER_RAD = 0.13f;
 	const float MARGIN_W = 0.1f;
 	const float MARGIN_H = 0.3f;
+
+	const float POCKET_Z = LEN / 2 - 0.05f;
+	const float POCKET_X = WIDTH / 2 - 0.05f;
+	const float POCKET_X_CENTER = WIDTH / 2 - 0.02f;
 
 	const glm::vec3 wallColor(0.06f, 0.02f, 0.0f);
 }
@@ -45,11 +49,11 @@ namespace Table
 namespace Ball
 {
 	const float WEIGHT = 0.16f; // kg
-	const float RAD = 0.05f;
+	const float RAD = 0.07f;
 	const float YPOS = Table::HEIGHT + Ball::RAD;
 
 	const float headZ = -0.31f * Table::LEN;
-	const float distX = RAD + 0.003f;
+	const float distX = RAD + 0.002f;
 	const float distZ = distX * (float)sqrt(3);
 
 	const glm::vec3 initYellowBallPos[7] = {
@@ -76,6 +80,6 @@ namespace Ball
 	const glm::vec3 initCueBallPos = glm::vec3(0, YPOS, -headZ);
 
 	const float BALL_IN_HAND_SPEED = 1.5f;
-	const float ACC = -1; // friction coefficient
+	const float ACC = -1.5f; // friction coefficient
 }
 }
