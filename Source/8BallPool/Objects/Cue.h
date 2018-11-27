@@ -1,28 +1,27 @@
 #pragma once
 
-#include "../UIConstants.h"
 #include "Core/GPU/Mesh.h"
 #include "8BallPool/ITargetObserver.h"
 
 class Cue : public ITargetObserver
 {
-	const glm::vec3 initCueDir = glm::vec3(0, -1, 0);
+    const glm::vec3 initCueDir = glm::vec3(0, -1, 0);
 
 public:
-	Mesh *mesh;
-	std::vector<Texture2D *> textures;
-	glm::mat4 translateMatrix, rotateMatrix;
-	float pullBackDist;
-	glm::vec3 cueDir;
+    Mesh *mesh;
+    std::vector<Texture2D *> textures;
+    glm::mat4 translateMatrix, rotateMatrix;
+    float pullBackDist;
+    glm::vec3 cueDir;
 
-	Cue();
-	~Cue();
+    Cue();
+    ~Cue();
 
-	std::vector<Texture2D *> GetTextures() const;
-	glm::mat4 GetModelMatrix() const;
-	void PullBack(float dist);
+    std::vector<Texture2D *> GetTextures() const;
+    glm::mat4 GetModelMatrix() const;
+    void PullBack(float dist);
 
-	void UpdatePos(glm::vec3 movement) override;
+    void UpdatePos(glm::vec3 movement) override;
 
-	void SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget) override;
+    void SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget) override;
 };

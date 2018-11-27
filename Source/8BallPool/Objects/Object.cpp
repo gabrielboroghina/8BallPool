@@ -1,8 +1,5 @@
 #include "Object.h"
 
-Object::Object() : isCushion(false) {}
-
-
-Object::Object(bool isCushion) : isCushion(isCushion) {}
+Object::Object(ObjectType type) : type(type) {}
 
 Object::~Object() {}

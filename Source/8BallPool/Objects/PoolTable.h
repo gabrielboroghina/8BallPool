@@ -4,23 +4,23 @@
 
 struct ColoredComp
 {
-	Mesh *mesh;
-	glm::vec3 color;
-	glm::mat4 modelMat;
+    Mesh *mesh;
+    glm::vec3 color;
+    glm::mat4 modelMat;
 
-	ColoredComp(Mesh *mesh, glm::vec3 color, glm::mat4 modelMat) :
-		mesh(mesh),
-		color(color),
-		modelMat(modelMat) {}
+    ColoredComp(Mesh *mesh, glm::vec3 color, glm::mat4 modelMat) :
+        mesh(mesh),
+        color(color),
+        modelMat(modelMat) {}
 };
 
 class PoolTable
 {
 public:
-	PoolTable();
-	~PoolTable();
+    PoolTable();
+    ~PoolTable();
 
-	std::vector<std::pair<Mesh *, glm::mat4>> texComps;
-	std::vector<ColoredComp> colorComps;
-	Texture2D *texture;
+    std::vector<std::pair<Mesh *, glm::mat4>> texComps;
+    std::vector<ColoredComp> colorComps;
+    Texture2D *texture;
 };

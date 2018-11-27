@@ -1,10 +1,16 @@
 #pragma once
 
+enum ObjectType
+{
+    BALL,
+    CUSHION,
+    POCKET
+};
+
 class Object
 {
 public:
-	bool isCushion;
-	Object();
-	Object(bool isCushion);
-	virtual ~Object();
+    ObjectType type;
+    Object (ObjectType);
+    virtual ~Object();
 };
