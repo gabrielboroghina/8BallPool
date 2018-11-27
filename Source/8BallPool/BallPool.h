@@ -7,7 +7,6 @@
 #include "Objects/PoolTable.h"
 #include "Objects/Ball.h"
 #include <unordered_set>
-#include "Objects/Cushion.h"
 
 enum GameState
 {
@@ -15,7 +14,8 @@ enum GameState
     BREAK,
     BALL_IN_HAND,
     TURN,
-    IN_MOVE
+    IN_MOVE,
+    FOUL
 };
 
 struct CollisionPair
@@ -44,7 +44,6 @@ private:
     // Objects
     Cue *cue;
     PoolTable *poolTable;
-    Cushion *cushion[4]; // 0 - left, 1 - top, 2 - right, 3 - bottom
     Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall;
     std::unordered_set<Ball *> gameBalls, balls;
 
@@ -64,6 +63,7 @@ private:
     void InitBalls();
     void TryMoveCueBall(const glm::vec2 &move);
     void UpdateCue(float deltaTime);
+	void UpdateBalls(float deltaTime);
     void ProcessMovements(float deltaTime);
 
     void OnInputUpdate(float deltaTime, int mods) override;

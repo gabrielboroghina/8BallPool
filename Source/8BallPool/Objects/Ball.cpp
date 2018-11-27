@@ -6,7 +6,8 @@
 
 using namespace UIConstants::Ball;
 
-Ball::Ball(const glm::vec3 &initialPos) : pos(initialPos), velocity(0), Object(BALL)
+Ball::Ball(const glm::vec3 &initialPos) :
+    pos(initialPos), velocity(0), scaleFactor(2 * RAD), isPocketed(false), Object(BALL)
 {
     mesh = new Mesh("ball");
     mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "sphere.obj");
@@ -24,8 +25,7 @@ glm::vec2 Ball::Get2DPos() const
 
 glm::mat4 Ball::GetModelMatrix() const
 {
-    float scaleFactor = 2 * RAD;
-    return scale(translate(glm::mat4(1), pos), glm::vec3(scaleFactor, scaleFactor, scaleFactor));
+    return scale(translate(glm::mat4(1), pos), glm::vec3(scaleFactor));
 }
 
 void Ball::Move(glm::vec3 delta)
@@ -48,13 +48,38 @@ void Ball::ReceiveVelocity(glm::vec2 v)
 
 void Ball::Update(float deltaTime)
 {
-    // update the position considering the friction with the table
-    float v_abs = glm::length(velocity);
-    if (v_abs > 0) {
-        float t = std::max(v_abs / ACC, deltaTime);
-        glm::vec2 movement = glm::normalize(velocity) * (std::max(v_abs + ACC * t / 2, 0.0f) * t);
-        pos.x += movement.x;
-        pos.z += movement.y;
-        velocity = glm::normalize(velocity) * std::max(v_abs + ACC * t, 0.0f);
+    // update pocketing animation (if active)
+    if (pocketingAnimTime > 0) {
+        float delta = 3 * deltaTime;
+        if (pocketingAnimTime < delta) {
+            pocketingAnimTime = 0;
+            isPocketed = true;
+        }
+        else pocketingAnimTime -= delta;
+
+        pos.y -= delta;
     }
+    else {
+        // update the position considering the friction with the table
+        float v_abs = glm::length(velocity);
+        if (v_abs > 0) {
+            float t = std::max(v_abs / ACC, deltaTime);
+            glm::vec2 movement = glm::normalize(velocity) * (std::max(v_abs + ACC * t / 2, 0.0f) * t);
+            pos.x += movement.x;
+            pos.z += movement.y;
+            velocity = glm::normalize(velocity) * std::max(v_abs + ACC * t, 0.0f);
+        }
+    }
+}
+
+void Ball::AnimatePocketing()
+{
+    pocketingAnimTime = 2 * RAD;
+    velocity = glm::vec3(0);
+}
+
+void Ball::Restore(glm::vec3 pos)
+{
+    this->pos = pos;
+	isPocketed = false;
 }

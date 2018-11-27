@@ -7,11 +7,14 @@
 class Ball : public Object
 {
     std::vector<ITargetObserver *> observers; // observers of the ball movement
+	float pocketingAnimTime;
+	float scaleFactor;
 
 public:
     glm::vec3 pos;
     Mesh *mesh;
     glm::vec2 velocity;
+	bool isPocketed;
 
     Ball(const glm::vec3 &initialPos);
     ~Ball();
@@ -22,4 +25,6 @@ public:
     void AttachObserver(ITargetObserver *observer);
     void ReceiveVelocity(glm::vec2 v);
     void Update(float deltaTime);
+	void AnimatePocketing();
+	void Restore(glm::vec3 pos);
 };
