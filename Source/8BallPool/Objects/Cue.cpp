@@ -68,8 +68,8 @@ Cue::Cue(): translateMatrix(glm::mat4(1)), rotateMatrix(glm::mat4(1))
     mesh = MeshBuilder::CreateMesh("cue", vertices, indices);
 
     // import textures
-    textures.push_back(new Texture2D());
-    textures.back()->Load2D("Resources/Textures/cue.png", GL_MIRRORED_REPEAT);
+    texture = new Texture2D();
+    texture->Load2D("Resources/Textures/cue.png", GL_MIRRORED_REPEAT);
 
     cueDir = initCueDir;
     pullBackDist = 0;
@@ -78,11 +78,6 @@ Cue::Cue(): translateMatrix(glm::mat4(1)), rotateMatrix(glm::mat4(1))
 Cue::~Cue()
 {
     delete mesh;
-}
-
-std::vector<Texture2D *> Cue::GetTextures() const
-{
-    return textures;
 }
 
 glm::mat4 Cue::GetModelMatrix() const

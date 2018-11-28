@@ -36,7 +36,7 @@ void BallPool::Init()
         floorMesh = MeshBuilder::CreateMesh("floor", vertices, indices);
 
         floorTexture = new Texture2D();
-        floorTexture->Load2D((RESOURCE_PATH::TEXTURES + "floor.jpg").c_str(), GL_REPEAT);
+        floorTexture->Load2D((RESOURCE_PATH::TEXTURES + "parquet.jpg").c_str(), GL_REPEAT);
     }
 
     // Load shader for texture by position
@@ -148,7 +148,7 @@ void BallPool::UpdateCue(float deltaTime)
 
 void BallPool::UpdateBalls(float deltaTime)
 {
-	for (auto it = balls.begin(); it != balls.end();) {
+    for (auto it = balls.begin(); it != balls.end();) {
         (*it)->Update(deltaTime); // bring the balls to present (move without collisions)
 
         // check if the ball was pocketed
@@ -159,7 +159,7 @@ void BallPool::UpdateBalls(float deltaTime)
             if (gameBalls.empty())
                 printf("---------------\nGAME ENDED!\n--------------\n");
         }
-		else ++it;
+        else ++it;
     }
 }
 
@@ -244,16 +244,6 @@ void BallPool::ProcessMovements(float deltaTime)
         deltaTime -= firstCollision.t;
         UpdateBalls(firstCollision.t);
 
-        // TODO delete
-        for (auto it = balls.begin(); it != balls.end(); ++it) {
-            auto it2 = it;
-            ++it2;
-            for (; it2 != balls.end(); ++it2)
-                if (distance((*it)->pos, (*it2)->pos) < 2 * RAD) {
-                    printf("%f\n", distance((*it)->pos, (*it2)->pos) - 2 * RAD);
-                }
-        }
-
         // process the first collision
         Ball *ball = firstCollision.a;
         switch (firstCollision.b->type) {
@@ -289,7 +279,7 @@ void BallPool::ProcessMovements(float deltaTime)
         FindAllCollisions();
     }
 
-    UpdateBalls(deltaTime);
+    UpdateBalls(deltaTime); // last update (without collisions)
 }
 
 void BallPool::Update(float deltaTimeSeconds)
@@ -299,19 +289,19 @@ void BallPool::Update(float deltaTimeSeconds)
 
     UpdateCue(deltaTimeSeconds);
     if (gameState != IN_MOVE && gameState != START)
-        RenderTexturedMesh(cue->mesh, shaders["Texture"], cue->GetModelMatrix(), cue->GetTextures());
+        RenderTexturedMesh(cue->mesh, shaders["Texture"], cue->GetModelMatrix(), {cue->texture});
 
     for (auto comp : poolTable->texComps)
-        RenderTexturedMesh(comp.first, shaders["Texture"], comp.second, {poolTable->texture});
+        RenderTexturedMesh(comp.mesh, shaders["Texture"], comp.modelMat, {comp.texture});
 
     for (auto comp : poolTable->colorComps)
         RenderColoredMesh(comp.mesh, shaders["Color"], comp.modelMat, comp.color);
 
     // render balls
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 7; i++) {
         RenderColoredMesh(yellowBalls[i]->mesh, shaders["Color"], yellowBalls[i]->GetModelMatrix(), glm::vec3(1, 1, 0));
-    for (int i = 0; i < 7; i++)
         RenderColoredMesh(redBalls[i]->mesh, shaders["Color"], redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
+    }
 
     RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
     RenderColoredMesh(cueBall->mesh, shaders["Color"], cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));

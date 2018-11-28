@@ -9,7 +9,7 @@ class Cue : public ITargetObserver
 
 public:
     Mesh *mesh;
-    std::vector<Texture2D *> textures;
+    Texture2D * texture;
     glm::mat4 translateMatrix, rotateMatrix;
     float pullBackDist;
     glm::vec3 cueDir;
@@ -17,7 +17,6 @@ public:
     Cue();
     ~Cue();
 
-    std::vector<Texture2D *> GetTextures() const;
     glm::mat4 GetModelMatrix() const;
     void PullBack(float dist);
 

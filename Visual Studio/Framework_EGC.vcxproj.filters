@@ -306,6 +306,7 @@
     <ClInclude Include="..\Source\8BallPool\Objects\Pocket.h">
       <Filter>8BallPool\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Source\Laboratoare\Laborator6\Shaders\FragmentShader.glsl">
@@ -347,5 +348,11 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\README.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="billiards.ico" />
   </ItemGroup>
 </Project>

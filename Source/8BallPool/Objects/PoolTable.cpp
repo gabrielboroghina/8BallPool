@@ -13,9 +13,13 @@ PoolTable::PoolTable()
 {
     Mesh *mesh;
 
+    // load texture
+    Texture2D *tableTexture = new Texture2D();
+    tableTexture->Load2D("Resources/Textures/table.jpg", GL_REPEAT);
+
     // create table top
-    texComps.push_back(make_pair(MeshBuilder::CreateRect(glm::vec3(0), LEN, WIDTH, glm::vec3(1, 1, 1)),
-                                 translate(glm::mat4(1), glm::vec3(0, HEIGHT, 0))));
+    texComps.push_back(TexturedComp(MeshBuilder::CreateRect(glm::vec3(0), LEN, WIDTH, glm::vec3(1, 1, 1)), tableTexture,
+                                    translate(glm::mat4(1), glm::vec3(0, HEIGHT, 0))));
 
     // create pockets
     int pocketIndex = -1;
@@ -36,20 +40,19 @@ PoolTable::PoolTable()
     mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "box.obj");
 
     // create table margins
+    Texture2D *woodTexture = new Texture2D();
+    woodTexture->Load2D("Resources/Textures/wood_table.jpg", GL_REPEAT);
+
     float e = MARGIN_W / 2;
     for (int i = -1; i <= 1; i += 2) {
-        colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(i * (WIDTH / 2 + e), HEIGHT, 0)),
-                                                                glm::vec3(MARGIN_W, MARGIN_H, LEN + 2 * MARGIN_W))));
-        colorComps.push_back(ColoredComp(mesh, wallColor, scale(translate(glm::mat4(1), glm::vec3(0, HEIGHT, i * (LEN / 2 + e))),
-                                                                glm::vec3(WIDTH, MARGIN_H, MARGIN_W))));
+        texComps.push_back(TexturedComp(mesh, woodTexture, scale(translate(glm::mat4(1), glm::vec3(i * (WIDTH / 2 + e), HEIGHT, 0)),
+                                                                 glm::vec3(MARGIN_W, MARGIN_H, LEN + 2 * MARGIN_W))));
+        texComps.push_back(TexturedComp(mesh, woodTexture, scale(translate(glm::mat4(1), glm::vec3(0, HEIGHT, i * (LEN / 2 + e))),
+                                                                 glm::vec3(WIDTH, MARGIN_H, MARGIN_W))));
     }
 
     for (int i = 0; i < 4; i++)
         cushions[i] = new Cushion(i);
-
-    // load texture
-    texture = new Texture2D();
-    texture->Load2D("Resources/Textures/table.jpg", GL_REPEAT);
 }
 
 PoolTable::~PoolTable()
@@ -57,5 +60,8 @@ PoolTable::~PoolTable()
     for (auto &comp : colorComps)
         delete comp.mesh;
 
-    delete texture;
+    for (auto &comp : texComps) {
+        delete comp.mesh;
+        delete comp.texture;
+    }
 }
