@@ -88,6 +88,6 @@ namespace Ball
     const glm::vec3 initCueBallPos = glm::vec3(0, YPOS, -headZ);
 
     const float BALL_IN_HAND_SPEED = 1.5f;
-    const float ACC = -1.5f; // friction coefficient
+    const float ACC = -1.6f; // friction acceleration
 }
 }

@@ -53,9 +53,9 @@ private:
     Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall, *firstTouchedBall;
     std::unordered_set<Ball *> gameBalls, balls;
 
-    int cueShotRunning;
+    int cueShotRunning; // tells if the cue is used in a shot right now
     float cueShotDist;
-    float limX, limY;
+    float limX, limY; // limits of the game area
 
     void FrameStart() override;
     void Update(float deltaTimeSeconds) override;
