@@ -22,10 +22,10 @@ class Camera : public ITargetObserver
 {
     float distanceToTarget;
     glm::mat4 projectionMatrix;
-    glm::vec3 position;
     glm::vec3 forward, right, up;
 
 public:
+    glm::vec3 position;
     CameraType type;
 
     Camera(int fov_deg, float aspectRatio) : type(CameraType::FirstPerson)
@@ -47,14 +47,6 @@ public:
         pos = glm::normalize(pos);
         return pos.x * forward + pos.y * up + pos.z * right;
     }
-
-    // void Set(const glm::vec3 &position, const glm::vec3 &center, const glm::vec3 &up)
-    // {
-    // 	this->position = position;
-    // 	this->forward = glm::normalize(center - position);
-    // 	this->right = glm::cross(up, forward);
-    // 	this->up = glm::cross(right, forward);
-    // }
 
     void SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget) override
     {

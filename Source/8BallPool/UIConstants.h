@@ -13,6 +13,15 @@ namespace Camera
     const glm::vec3 LOOKING_DIR_THIRD_PERSON = glm::vec3(0, 0.5f, 0.45f);
 }
 
+namespace Light
+{
+    const glm::vec3 LIGHT_POS = glm::vec3(0, 2, 0);
+    const glm::vec3 LIGHT_DIR = glm::vec3(0, -1, 0);
+    const unsigned int MATERIAL_SHININESS = 70;
+    const float MATERIAL_KD = 0.3f;
+    const float MATERIAL_KS = 1.4f;
+}
+
 namespace Cue
 {
     const float LENGTH = 1.5f;
@@ -23,7 +32,7 @@ namespace Cue
 
     const int PULL_BACK_SPEED_FACTOR = 1;
     const int RETURN_SPEED_FACTOR = -10;
-	const float MAX_PULLBACK_DIST = 1.5f;
+    const float MAX_PULLBACK_DIST = 1.5f;
 }
 
 namespace Floor
@@ -49,7 +58,6 @@ namespace Table
 
 namespace Ball
 {
-    const float WEIGHT = 0.16f; // kg
     const float RAD = 0.07f;
     const float YPOS = Table::HEIGHT + Ball::RAD;
 

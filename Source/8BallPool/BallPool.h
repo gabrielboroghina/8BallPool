@@ -16,7 +16,8 @@ enum GameState
     BALL_IN_HAND,
     TURN,
     IN_MOVE,
-    FOUL
+    FOUL,
+    ENDED
 };
 
 struct CollisionPair
@@ -40,6 +41,7 @@ private:
     GameState gameState;
     Player player[3];
     int currentPlayer;
+    bool scored;
 
     Camera *camera;
     Mesh *floorMesh;
@@ -75,6 +77,7 @@ private:
     void UpdateCue(float deltaTime);
     void UpdateBalls(float deltaTime);
     void ProcessMovements(float deltaTime);
+    void DisplayStatistics();
 
     void OnInputUpdate(float deltaTime, int mods) override;
     void OnKeyPress(int key, int mods) override;
