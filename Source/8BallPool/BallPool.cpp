@@ -8,13 +8,17 @@
 
 using namespace std;
 
-BallPool::BallPool() : cueShotRunning(false), player(1) {}
+BallPool::BallPool()
+    : cueShotRunning(false),
+      currentPlayer(1),
+      gameState(START) {}
 
 BallPool::~BallPool()
 {
     delete floorTexture;
     delete floorMesh;
     delete cue;
+    delete poolTable;
 }
 
 void BallPool::Init()
@@ -35,12 +39,10 @@ void BallPool::Init()
         };
 
         floorMesh = MeshBuilder::CreateMesh("floor", vertices, indices);
-
         floorTexture = new Texture2D();
         floorTexture->Load2D((RESOURCE_PATH::TEXTURES + "parquet.jpg").c_str(), GL_REPEAT);
     }
 
-    // Load shader for texture by position
     LoadShader("TextureByPos", "TextureByPos", "TextureByPos");
     LoadShader("Texture", "Texture", "Texture");
     LoadShader("PullBackAnim", "PullBackAnim", "Texture");
@@ -50,35 +52,31 @@ void BallPool::Init()
     cue = new Cue();
     poolTable = new PoolTable();
 
-    // init camera
+    // initialize camera
     camera = new Camera(60, window->props.aspectRatio);
     camera->SwitchMode(FirstPerson, CameraLayout::TopDown);
 
     cueBall->AttachObserver(camera);
     cueBall->AttachObserver(cue);
 
-    gameState = START;
-
-    // the limits of the game area
+    // compute the limits of the game area
     limX = UIConstants::Table::WIDTH / 2 - UIConstants::Ball::RAD;
     limY = UIConstants::Table::LEN / 2 - UIConstants::Ball::RAD;
-
-    playerColor[1] = playerColor[2] = BLACK;
 }
 
 void BallPool::InitBalls()
 {
     for (int i = 0; i < 7; i++) {
-        yellowBalls[i] = new Ball(UIConstants::Ball::initYellowBallPos[i], BallColor::YELLOW);
-        redBalls[i] = new Ball(UIConstants::Ball::initRedBallPos[i], BallColor::RED);
+        yellowBalls[i] = new Ball(UIConstants::Ball::initYellowBallPos[i], YELLOW);
+        redBalls[i] = new Ball(UIConstants::Ball::initRedBallPos[i], RED);
 
         gameBalls.insert(yellowBalls[i]);
         gameBalls.insert(redBalls[i]);
     }
 
-    blackBall = new Ball(UIConstants::Ball::initBlackBallPos, BallColor::BLACK);
+    blackBall = new Ball(UIConstants::Ball::initBlackBallPos, BLACK);
     gameBalls.insert(blackBall);
-    cueBall = new Ball(UIConstants::Ball::initCueBallPos, BallColor::WHITE);
+    cueBall = new Ball(UIConstants::Ball::initCueBallPos, WHITE);
 
     balls = gameBalls;
     balls.insert(cueBall);
@@ -103,8 +101,9 @@ void BallPool::TryMoveCueBall(const glm::vec2 &move)
     // check balls touches during move
     float fmax = 1;
     for (auto &ball : gameBalls) {
-        float a = distX * distX + distY * distY;
         float rx = ball->pos.x - cueBall->pos.x, ry = ball->pos.z - cueBall->pos.z;
+
+        float a = distX * distX + distY * distY;
         float b = -2 * (rx * distX + ry * distY);
         float c = pow(rx, 2) + pow(ry, 2) - 4 * RAD * RAD;
         float d = sqrt(b * b - 4 * a * c);
@@ -157,17 +156,24 @@ void BallPool::UpdateBalls(float deltaTime)
 
         // check if the ball was pocketed
         if ((*it)->isPocketed && cueBall != *it) {
-            if ((*it)->color == BLACK || gameBalls.empty())
-                cout << "---------------\nGAME ENDED!\n--------------\n";
+            if ((*it)->color == BLACK) {
+                cout << "---------------\nGAME ENDED!\n---------------\n";
+                cout << "Player " << ((gameBalls.size() == 1) ? currentPlayer : 3 - currentPlayer) << "won! :)\n";
+            }
 
-            if (playerColor[1] == BLACK) {
+            if (player[1].color == BLACK) {
                 // this is the first pocketed ball
-                playerColor[player] = (*it)->color;
-                playerColor[3 - player] = ((*it)->color == YELLOW) ? RED : YELLOW;
+                player[currentPlayer].color = (*it)->color;
+                player[3 - currentPlayer].color = ((*it)->color == YELLOW) ? RED : YELLOW;
 
                 for (int i = 1; i <= 2; i++)
-                    cout << "\n<<< Player " << i << " color:  " << (playerColor[i] == YELLOW ? "Yellow" : "Red") << " >>>\n";
+                    cout << "\n<<< Player " << i << " color:  " << (player[i].color == YELLOW ? "Yellow" : "Red") << " >>>\n";
             }
+
+            // update score
+            for (int i = 1; i <= 2; i++)
+                if ((*it)->color == player[i].color)
+                    player[i].score++;
 
             gameBalls.erase(*it);
             it = balls.erase(it);
@@ -306,23 +312,23 @@ void BallPool::Update(float deltaTimeSeconds)
 
     UpdateCue(deltaTimeSeconds);
     if (gameState != IN_MOVE && gameState != START)
-        RenderPullBackAnimatedMesh(cue->mesh, shaders["PullBackAnim"], cue->GetModelMatrix(),
+        RenderPullBackAnimatedMesh(cue->mesh, cue->GetModelMatrix(),
                                    cue->texture, cue->cueDir, cue->pullBackDist);
 
     for (auto comp : poolTable->texComps)
         RenderTexturedMesh(comp.mesh, shaders["Texture"], comp.modelMat, {comp.texture});
 
     for (auto comp : poolTable->colorComps)
-        RenderColoredMesh(comp.mesh, shaders["Color"], comp.modelMat, comp.color);
+        RenderColoredMesh(comp.mesh, comp.modelMat, comp.color);
 
     // render balls
     for (int i = 0; i < 7; i++) {
-        RenderColoredMesh(yellowBalls[i]->mesh, shaders["Color"], yellowBalls[i]->GetModelMatrix(), glm::vec3(1, 1, 0));
-        RenderColoredMesh(redBalls[i]->mesh, shaders["Color"], redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
+        RenderColoredMesh(yellowBalls[i]->mesh, yellowBalls[i]->GetModelMatrix(), glm::vec3(1, 1, 0));
+        RenderColoredMesh(redBalls[i]->mesh, redBalls[i]->GetModelMatrix(), glm::vec3(1, 0, 0));
     }
 
-    RenderColoredMesh(blackBall->mesh, shaders["Color"], blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
-    RenderColoredMesh(cueBall->mesh, shaders["Color"], cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));
+    RenderColoredMesh(blackBall->mesh, blackBall->GetModelMatrix(), glm::vec3(0, 0, 0));
+    RenderColoredMesh(cueBall->mesh, cueBall->GetModelMatrix(), glm::vec3(1, 1, 1));
 }
 
 void BallPool::FrameEnd() {}
@@ -359,8 +365,9 @@ void BallPool::RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const 
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
 }
 
-void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const
+void BallPool::RenderColoredMesh(const Mesh *mesh, const glm::mat4 &modelMatrix, const glm::vec3 &color) const
 {
+    Shader *shader = shaders.at("Color");
     if (!mesh || !shader || !shader->GetProgramID())
         return;
 
@@ -374,9 +381,10 @@ void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const g
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
 }
 
-void BallPool::RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const Texture2D *texture,
+void BallPool::RenderPullBackAnimatedMesh(const Mesh *mesh, const glm::mat4 &modelMatrix, const Texture2D *texture,
                                           const glm::vec3 &pullBackDir, float pullBackDist) const
 {
+    const Shader *shader = shaders.at("PullBackAnim");
     if (!mesh || !shader || !shader->GetProgramID())
         return;
 
@@ -415,31 +423,39 @@ void BallPool::OnInputUpdate(float deltaTime, int mods)
     }
 }
 
+void BallPool::Foul()
+{
+    cout << "FOUL\n";
+    player[currentPlayer].fouls++;
+
+    gameState = BALL_IN_HAND;
+}
 
 void BallPool::OnKeyPress(int key, int mods)
 {
     if (key == GLFW_KEY_SPACE) {
-        if (firstTouchedBall != nullptr) {
-            score[player] += (firstTouchedBall->color == playerColor[player]) ? 1 : 0;
-            score[3 - player] += (firstTouchedBall->color != playerColor[player]) ? 1 : 0;
-        }
-
-        firstTouchedBall = nullptr;
-
+        // update game state
         if (gameState == START)
             gameState = BREAK;
         else if (gameState == IN_MOVE) {
-            player = 3 - player;
-            if (cueBall->isPocketed) {
-                gameState = BALL_IN_HAND; // foul
-                cout << "FOUL\n";
+            if (firstTouchedBall == nullptr || (firstTouchedBall && firstTouchedBall->color == player[3 - currentPlayer].color))
+                Foul();
+            else if (cueBall->isPocketed) {
+                Foul();
                 cueBall->Restore(UIConstants::Ball::initCueBallPos);
             }
             else
                 gameState = TURN;
+            currentPlayer = 3 - currentPlayer; // switch current player
         }
 
-        cout << "-> Player " << player << ":\n";
+        firstTouchedBall = nullptr;
+
+        // display game statistics
+        cout << "\n Score (Fouls): " << player[1].score << " (" << player[1].fouls << ")  -  "
+            << player[2].score << " (" << player[2].fouls << ")\n";
+        cout << "-----------------------------------------\n";
+        cout << "\n-> Player " << currentPlayer << ":\n";
 
         // switch to <third person> camera mode
         camera->SwitchMode(CameraType::ThirdPerson);

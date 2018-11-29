@@ -7,6 +7,7 @@
 #include "Objects/PoolTable.h"
 #include "Objects/Ball.h"
 #include <unordered_set>
+#include "Player.h"
 
 enum GameState
 {
@@ -36,8 +37,11 @@ public:
     void Init() override;
 
 private:
-    Camera *camera;
     GameState gameState;
+    Player player[3];
+    int currentPlayer;
+
+    Camera *camera;
     Mesh *floorMesh;
     Texture2D *floorTexture;
 
@@ -50,9 +54,6 @@ private:
     int cueShotRunning;
     float cueShotDist;
     float limX, limY;
-    short player, score[3];
-
-    BallColor playerColor[3];
 
     void FrameStart() override;
     void Update(float deltaTimeSeconds) override;
@@ -63,11 +64,12 @@ private:
     void RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
                             const std::vector<Texture2D *> &textures) const;
 
-    void RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
+    void RenderColoredMesh(const Mesh *mesh, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
 
-    void RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const Texture2D *texture,
+    void RenderPullBackAnimatedMesh(const Mesh *mesh, const glm::mat4 &modelMatrix, const Texture2D *texture,
                                     const glm::vec3 &pullBackDir, float pullBackDist) const;
 
+    void Foul();
     void InitBalls();
     void TryMoveCueBall(const glm::vec2 &move);
     void UpdateCue(float deltaTime);

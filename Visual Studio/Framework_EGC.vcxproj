@@ -27,6 +27,7 @@
     <ClCompile Include="..\Source\8BallPool\Objects\Object.cpp" />
     <ClCompile Include="..\Source\8BallPool\Objects\Pocket.cpp" />
     <ClCompile Include="..\Source\8BallPool\Objects\PoolTable.cpp" />
+    <ClCompile Include="..\Source\8BallPool\Player.cpp" />
     <ClCompile Include="..\Source\Component\CameraInput.cpp" />
     <ClCompile Include="..\Source\Component\SceneInput.cpp" />
     <ClCompile Include="..\Source\Component\SimpleScene.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="..\Source\8BallPool\Objects\Object.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\Pocket.h" />
     <ClInclude Include="..\Source\8BallPool\Objects\PoolTable.h" />
+    <ClInclude Include="..\Source\8BallPool\Player.h" />
     <ClInclude Include="..\Source\8BallPool\UIConstants.h" />
     <ClInclude Include="..\Source\Component\CameraInput.h" />
     <ClInclude Include="..\Source\Component\SceneInput.h" />
