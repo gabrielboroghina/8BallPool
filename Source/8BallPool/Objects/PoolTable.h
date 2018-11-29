@@ -10,14 +10,17 @@ struct ColoredComp
     glm::vec3 color;
     glm::mat4 modelMat;
 
-    ColoredComp(Mesh *mesh, glm::vec3 color, const glm::mat4 modelMat) : mesh(mesh), color(color), modelMat(modelMat) {}
+    ColoredComp(Mesh *mesh, glm::vec3 color, const glm::mat4 modelMat)
+        : mesh(mesh),
+          color(color),
+          modelMat(modelMat) {}
 };
 
 struct TexturedComp
 {
-	Mesh *mesh;
-	Texture2D *texture;
-	glm::mat4 modelMat;
+    Mesh *mesh;
+    Texture2D *texture;
+    glm::mat4 modelMat;
 
     TexturedComp(Mesh *mesh, Texture2D *texture, const glm::mat4 &model_mat)
         : mesh(mesh),

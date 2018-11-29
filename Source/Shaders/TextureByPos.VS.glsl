@@ -14,7 +14,7 @@ out vec3 v_pos_out;
 
 void main()
 {
-	// pass v_pos_out as output to Fragment Shader
-	v_pos_out = v_position;
-	gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    // pass v_pos_out as output to Fragment Shader
+    v_pos_out = v_position;
+    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 }

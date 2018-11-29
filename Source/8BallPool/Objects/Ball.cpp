@@ -6,8 +6,8 @@
 
 using namespace UIConstants::Ball;
 
-Ball::Ball(const glm::vec3 &initialPos) :
-    pos(initialPos), velocity(0), scaleFactor(2 * RAD), isPocketed(false), Object(BALL)
+Ball::Ball(const glm::vec3 &initialPos, BallColor color) :
+    color(color), pos(initialPos), velocity(0), scaleFactor(2 * RAD), isPocketed(false), Object(BALL)
 {
     mesh = new Mesh("ball");
     mesh->LoadMesh(RESOURCE_PATH::MODELS + "Primitives", "sphere.obj");
@@ -81,5 +81,5 @@ void Ball::AnimatePocketing()
 void Ball::Restore(glm::vec3 pos)
 {
     this->pos = pos;
-	isPocketed = false;
+    isPocketed = false;
 }

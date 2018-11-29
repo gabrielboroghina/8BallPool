@@ -1,5 +1,6 @@
 #include "Cue.h"
 
+#include <algorithm>
 #include "../UIConstants.h"
 #include "8BallPool/MeshBuilder.h"
 #include <GL/glew.h>
@@ -82,13 +83,14 @@ Cue::~Cue()
 
 glm::mat4 Cue::GetModelMatrix() const
 {
-    return glm::translate(translateMatrix, glm::vec3(cueDir * pullBackDist)) * rotateMatrix *
-        glm::scale(glm::mat4(1), glm::vec3(1.5f, 1.5f, 1.5f));
+    return translateMatrix * rotateMatrix * glm::scale(glm::mat4(1), glm::vec3(1.5f, 1.5f, 1.5f));
 }
 
 void Cue::PullBack(float dist)
 {
     pullBackDist += dist;
+    if (pullBackDist > UIConstants::Cue::MAX_PULLBACK_DIST)
+        pullBackDist = 0;
 }
 
 void Cue::UpdatePos(glm::vec3 movement)

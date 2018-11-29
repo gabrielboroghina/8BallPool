@@ -43,7 +43,7 @@ void BallPool::Init()
     // Load shader for texture by position
     LoadShader("TextureByPos", "TextureByPos", "TextureByPos");
     LoadShader("Texture", "Texture", "Texture");
-    LoadShader("PullBackAnim", "PullBackAnim", "Texture");
+    LoadShader("PullBackAnim", "Texture", "PullBackAnim");
 
     // initialize objects
     InitBalls();
@@ -306,8 +306,7 @@ void BallPool::Update(float deltaTimeSeconds)
 
     UpdateCue(deltaTimeSeconds);
     if (gameState != IN_MOVE && gameState != START)
-        RenderPullBackAnimatedMesh(cue->mesh, shaders["PullBackAnim"], cue->GetModelMatrix(),
-                                   cue->texture, cue->cueDir, cue->pullBackDist);
+        RenderPullBackAnimatedMesh(cue->mesh, shaders["PullBackAnim"], cue->GetModelMatrix(), -cue->cueDir, cue->pullBackDist);
 
     for (auto comp : poolTable->texComps)
         RenderTexturedMesh(comp.mesh, shaders["Texture"], comp.modelMat, {comp.texture});
@@ -374,18 +373,13 @@ void BallPool::RenderColoredMesh(const Mesh *mesh, const Shader *shader, const g
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_SHORT, 0);
 }
 
-void BallPool::RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const Texture2D *texture,
+void BallPool::RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
                                           const glm::vec3 &pullBackDir, float pullBackDist) const
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
 
     SetShaderMVP(shader, modelMatrix);
-
-    // Bind texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture->GetTextureID());
-    glUniform1i(glGetUniformLocation(shader->GetProgramID(), "textureImg0"), 0);
 
     // Bind pull back direction vector and distance
     glUniform3fv(glGetUniformLocation(shader->program, "pull_back_dir"), 1, glm::value_ptr(pullBackDir));
@@ -399,11 +393,11 @@ void BallPool::RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader
 void BallPool::OnInputUpdate(float deltaTime, int mods)
 {
     // process camera movement
-    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT) && camera->type == FirstPerson)
+    if (window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE) && camera->type == FirstPerson)
         camera->Update(deltaTime, window->KeyHold(GLFW_KEY_W), window->KeyHold(GLFW_KEY_A), window->KeyHold(GLFW_KEY_S),
                        window->KeyHold(GLFW_KEY_D), window->KeyHold(GLFW_KEY_Q), window->KeyHold(GLFW_KEY_E));
 
-    if ((gameState == BALL_IN_HAND || gameState == BREAK) && !window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
+    if ((gameState == BALL_IN_HAND || gameState == BREAK) && !window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) {
         if (window->KeyHold(GLFW_KEY_W))
             TryMoveCueBall(glm::vec2(0, -deltaTime));
         else if (window->KeyHold(GLFW_KEY_A))

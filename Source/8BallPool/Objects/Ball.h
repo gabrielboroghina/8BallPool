@@ -4,6 +4,14 @@
 #include "8BallPool/ITargetObserver.h"
 #include "Object.h"
 
+enum BallColor
+{
+    YELLOW,
+    RED,
+    BLACK,
+    WHITE
+};
+
 class Ball : public Object
 {
     std::vector<ITargetObserver *> observers; // observers of the ball movement
@@ -15,8 +23,9 @@ public:
     Mesh *mesh;
     glm::vec2 velocity;
 	bool isPocketed;
+	BallColor color;
 
-    Ball(const glm::vec3 &initialPos);
+    Ball(const glm::vec3 &initialPos, BallColor color);
     ~Ball();
 
     glm::vec2 Get2DPos() const;

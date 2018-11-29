@@ -44,26 +44,34 @@ private:
     // Objects
     Cue *cue;
     PoolTable *poolTable;
-    Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall;
+    Ball *yellowBalls[7], *redBalls[7], *blackBall, *cueBall, *firstTouchedBall;
     std::unordered_set<Ball *> gameBalls, balls;
 
     int cueShotRunning;
     float cueShotDist;
     float limX, limY;
+    short player, score[3];
+
+    BallColor playerColor[3];
 
     void FrameStart() override;
     void Update(float deltaTimeSeconds) override;
     void FrameEnd() override;
+
+    void SetShaderMVP(const Shader *shader, const glm::mat4 &modelMatrix) const;
 
     void RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix,
                             const std::vector<Texture2D *> &textures) const;
 
     void RenderColoredMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color) const;
 
+    void RenderPullBackAnimatedMesh(const Mesh *mesh, const Shader *shader, const glm::mat4 &modelMatrix, const Texture2D *texture,
+                                    const glm::vec3 &pullBackDir, float pullBackDist) const;
+
     void InitBalls();
     void TryMoveCueBall(const glm::vec2 &move);
     void UpdateCue(float deltaTime);
-	void UpdateBalls(float deltaTime);
+    void UpdateBalls(float deltaTime);
     void ProcessMovements(float deltaTime);
 
     void OnInputUpdate(float deltaTime, int mods) override;

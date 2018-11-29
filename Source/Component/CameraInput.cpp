@@ -17,7 +17,7 @@ CameraInput::CameraInput(Camera *camera)
 
 void CameraInput::OnInputUpdate(float deltaTime, int mods)
 {
-	if (!window->MouseHold(GLFW_MOUSE_BUTTON_MIDDLE)) return;
+	if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) return;
 
 	if (window->GetSpecialKeyState() & GLFW_MOD_SHIFT)
 	{

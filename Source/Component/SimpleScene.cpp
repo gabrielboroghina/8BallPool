@@ -234,15 +234,15 @@ void SimpleScene::RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
 	mesh->Render();
 }
 
-void SimpleScene::LoadShader(const char *shaderName)
+void SimpleScene::LoadShader(const char *shaderName, const char *vertexShaderName, const char *fragmentShaderName)
 {
 	string shadersPath = "Source/Shaders/";
-	string vertexShaderName = shadersPath + shaderName + ".VS.glsl";
-	string fragmentShaderName = shadersPath + shaderName + ".FS.glsl";
+	string vertexShader = shadersPath + vertexShaderName + ".VS.glsl";
+	string fragmentShader = shadersPath + fragmentShaderName + ".FS.glsl";
 
 	Shader *shader = new Shader(shaderName);
-	shader->AddShader(vertexShaderName.c_str(), GL_VERTEX_SHADER);
-	shader->AddShader(fragmentShaderName.c_str(), GL_FRAGMENT_SHADER);
+	shader->AddShader(vertexShader.c_str(), GL_VERTEX_SHADER);
+	shader->AddShader(fragmentShader.c_str(), GL_FRAGMENT_SHADER);
 	shader->CreateAndLink();
 	shaders[shader->GetName()] = shader;
 }

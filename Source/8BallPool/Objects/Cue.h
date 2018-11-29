@@ -9,7 +9,7 @@ class Cue : public ITargetObserver
 
 public:
     Mesh *mesh;
-    Texture2D * texture;
+    Texture2D *texture;
     glm::mat4 translateMatrix, rotateMatrix;
     float pullBackDist;
     glm::vec3 cueDir;
@@ -19,8 +19,6 @@ public:
 
     glm::mat4 GetModelMatrix() const;
     void PullBack(float dist);
-
     void UpdatePos(glm::vec3 movement) override;
-
     void SetTarget(glm::vec3 targetPos, glm::vec3 dir, float distToTarget) override;
 };
