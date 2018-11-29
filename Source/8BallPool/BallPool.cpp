@@ -46,6 +46,7 @@ void BallPool::Init()
     LoadShader("TextureByPos", "TextureByPos", "TextureByPos");
     LoadShader("Texture", "Texture", "Texture");
     LoadShader("PullBackAnim", "PullBackAnim", "Texture");
+    LoadShader("LightColor", "Texture", "Color");
 
     // initialize objects
     InitBalls();
@@ -353,15 +354,14 @@ void BallPool::SetShaderMVP(const Shader *shader, const glm::mat4 &modelMatrix) 
     glUseProgram(shader->program);
 
     // Set shader uniforms for light & material properties
-    // Bind light position and direction
+    // Bind light position
     glUniform3fv(glGetUniformLocation(shader->program, "light_position"), 1, glm::value_ptr(UIConstants::Light::LIGHT_POS));
-    glUniform3fv(glGetUniformLocation(shader->program, "light_direction"), 1, glm::value_ptr(UIConstants::Light::LIGHT_DIR));
 
     // Bind eye position (camera position)
     glm::vec3 eyePosition = modelMatrix * glm::vec4(camera->position, 1);
-    glUniform3f(glGetUniformLocation(shader->program, "eye_position"), eyePosition.x, eyePosition.y, eyePosition.z);
+    glUniform3fv(glGetUniformLocation(shader->program, "eye_position"), 1, glm::value_ptr(eyePosition));
 
-    // Bind material property uniforms (shininess, kd, ks, object color) 
+    // Bind material property uniforms (shininess, kd, ks) 
     glUniform1i(glGetUniformLocation(shader->program, "material_shininess"), UIConstants::Light::MATERIAL_SHININESS);
     glUniform1f(glGetUniformLocation(shader->program, "material_kd"), UIConstants::Light::MATERIAL_KD);
     glUniform1f(glGetUniformLocation(shader->program, "material_ks"), UIConstants::Light::MATERIAL_KS);
@@ -395,7 +395,7 @@ void BallPool::RenderTexturedMesh(const Mesh *mesh, const Shader *shader, const 
 
 void BallPool::RenderColoredMesh(const Mesh *mesh, const glm::mat4 &modelMatrix, const glm::vec3 &color) const
 {
-    Shader *shader = shaders.at("Color");
+    Shader *shader = shaders.at("LightColor");
     if (!mesh || !shader || !shader->GetProgramID())
         return;
 

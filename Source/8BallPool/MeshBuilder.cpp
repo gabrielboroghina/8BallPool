@@ -117,10 +117,10 @@ Mesh *MeshBuilder::CreateRect(glm::vec3 center, float height, float width, glm::
     height /= 2;
     width /= 2;
     std::vector<VertexFormat> vertices = {
-        VertexFormat(center + glm::vec3(-width, 0, -height), color, glm::vec3(0), glm::vec2(0, 0)),
-        VertexFormat(center + glm::vec3(width, 0, -height), color, glm::vec3(0), glm::vec2(0, 4)),
-        VertexFormat(center + glm::vec3(width, 0, height), color, glm::vec3(0), glm::vec2(4, 4)),
-        VertexFormat(center + glm::vec3(-width, 0, height), color, glm::vec3(0), glm::vec2(4, 0))
+        VertexFormat(center + glm::vec3(-width, 0, -height), color, glm::vec3(0, 1, 0), glm::vec2(0, 0)),
+        VertexFormat(center + glm::vec3(width, 0, -height), color, glm::vec3(0, 1, 0), glm::vec2(4, 0)),
+        VertexFormat(center + glm::vec3(width, 0, height), color, glm::vec3(0, 1, 0), glm::vec2(4, 4)),
+        VertexFormat(center + glm::vec3(-width, 0, height), color, glm::vec3(0, 1, 0), glm::vec2(0, 4))
     };
 
     Mesh *rect = new Mesh("rect");

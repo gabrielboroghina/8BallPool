@@ -1,9 +1,9 @@
 #version 330
 
 layout(location = 0) in vec3 v_position;
-layout(location = 3) in vec3 v_normal;
+layout(location = 1) in vec3 v_normal;
 layout(location = 2) in vec2 v_texture_coord;
-layout(location = 1) in vec3 v_color;
+layout(location = 3) in vec3 v_color;
 
 // Uniform properties
 uniform mat4 Model;

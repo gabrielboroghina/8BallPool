@@ -210,6 +210,9 @@
     <None Include="..\Source\Shaders\PullBackAnim.VS.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\Source\Shaders\Color.FS.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\README.txt" />

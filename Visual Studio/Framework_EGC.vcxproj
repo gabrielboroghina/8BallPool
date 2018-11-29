@@ -78,6 +78,7 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Source\Shaders\Color.FS.glsl" />
     <None Include="..\Source\Shaders\PullBackAnim.VS.glsl" />
     <None Include="..\Source\Shaders\Texture.FS.glsl" />
     <None Include="..\Source\Shaders\Texture.VS.glsl" />
